@@ -22,7 +22,7 @@ export default function ThreeDViewer({ stlPath }: { stlPath: string }) {
                     {stlPath && <StlModel url={stlPath} />}
                 </Suspense>
             </Stage>
-            <OrbitControls makeDefault autoRotate />
+            <OrbitControls makeDefault autoRotate={false} />
         </Canvas>
     );
 }

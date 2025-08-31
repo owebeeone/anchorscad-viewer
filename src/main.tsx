@@ -13,7 +13,8 @@ import {
     SelectedModuleNameTap,
     SelectedShapeNameTap,
     SelectedExampleNameTap,
-    SelectedPartNameTap
+    SelectedPartNameTap,
+    ActiveTabTap
 } from './taps.ts'
 
 // Register all data provider taps with the GROK engine
@@ -28,6 +29,7 @@ grok.registerTap(SelectedModuleNameTap);
 grok.registerTap(SelectedShapeNameTap);
 grok.registerTap(SelectedExampleNameTap);
 grok.registerTap(SelectedPartNameTap);
+grok.registerTap(ActiveTabTap);
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

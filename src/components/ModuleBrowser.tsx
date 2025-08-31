@@ -1,4 +1,5 @@
 import { useGrip, useGripSetter } from '@owebeeone/grip-react';
+import { useEffect, useRef } from 'react';
 import {
     ALL_MODULES_LIST,
     MODELS_IN_SELECTED_MODULE_LIST,
@@ -14,12 +15,26 @@ import 'swiper/css';
 
 const ModuleList = () => {
     const modules = useGrip(ALL_MODULES_LIST);
+    const models = useGrip(MODELS_IN_SELECTED_MODULE_LIST);
     const selectedModule = useGrip(SELECTED_MODULE_NAME);
     const setModule = useGripSetter(SELECTED_MODULE_NAME_TAP);
     const setShape = useGripSetter(SELECTED_SHAPE_NAME_TAP);
     const setExample = useGripSetter(SELECTED_EXAMPLE_NAME_TAP);
     const setPart = useGripSetter(SELECTED_PART_NAME_TAP);
 
+
+    const prevModuleRef = useRef<string | undefined>();
+    
+    // Auto-select the last model when module changes and models are available
+    useEffect(() => {
+        if (selectedModule && selectedModule !== prevModuleRef.current && models && models.length > 0) {
+            const lastModel = models[models.length - 1];
+            setShape(lastModel.class_name);
+            setExample(lastModel.example_name);
+            setPart(DEFAULT_PART);
+        }
+        prevModuleRef.current = selectedModule;
+    }, [selectedModule, models, setShape, setExample, setPart]);
 
     if (!modules) return <div className="p-2 text-gray-500">Loading modules...</div>;
 

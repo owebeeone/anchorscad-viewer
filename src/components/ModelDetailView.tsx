@@ -1,16 +1,22 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useGrip, useGripSetter } from '@owebeeone/grip-react';
 import {
     CURRENT_MODEL_PARTS,
     SELECTED_PART_NAME,
     SELECTED_PART_NAME_TAP,
+    SELECTED_MODULE_NAME,
+    ACTIVE_TAB,
+    ACTIVE_TAB_TAP,
     CURRENT_STL_PATH,
+    CURRENT_PNG_PATH,
     CURRENT_SCAD_PATH,
     CURRENT_GRAPH_SVG_PATH,
     CURRENT_STDERR_PATH,
-    DEFAULT_PART
+    DEFAULT_PART,
+    ViewerTab
 } from '../grips';
 import ThreeDViewer from './a_ui/ThreeDViewer';
+import PngViewer from './a_ui/PngViewer';
 import SvgViewer from './a_ui/SvgViewer';
 import CodeViewer from './a_ui/CodeViewer';
 import ErrorLogViewer from './a_ui/ErrorLogViewer';
@@ -50,14 +56,17 @@ const PartSelector = () => {
     );
 };
 
-type TabName = '3D' | 'Graph' | 'Code' | 'Error';
+type TabName = 'PNG' | '3D' | 'Graph' | 'Code' | 'Error';
 
 export default function ModelDetailView() {
     const stlPath = useGrip(CURRENT_STL_PATH);
+    const pngPath = useGrip(CURRENT_PNG_PATH);
     const scadPath = useGrip(CURRENT_SCAD_PATH);
     const svgPath = useGrip(CURRENT_GRAPH_SVG_PATH);
     const stderrPath = useGrip(CURRENT_STDERR_PATH);
     const selectedPart = useGrip(SELECTED_PART_NAME);
+    const activeTab = useGrip(ACTIVE_TAB);
+    const setActiveTab = useGripSetter(ACTIVE_TAB_TAP);
 
     // Debug logging
     console.log('ModelDetailView paths:', {
@@ -70,14 +79,19 @@ export default function ModelDetailView() {
         svgPath,
         stderrPath
     });
-
-    const [activeTab, setActiveTab] = useState<TabName>('3D');
+    
+    // Reset to PNG tab when module changes (when selectedModule changes)
+    const selectedModule = useGrip(SELECTED_MODULE_NAME);
+    useEffect(() => {
+        setActiveTab('PNG');
+    }, [selectedModule, setActiveTab]);
     
     if (!stlPath && !scadPath && !svgPath && !stderrPath) {
         return <div className="flex items-center justify-center h-full text-gray-500">Select a model to view details</div>;
     }
 
     const tabs = [
+        { name: 'PNG' as const, path: pngPath },
         { name: '3D' as const, path: stlPath },
         { name: 'Graph' as const, path: svgPath },
         { name: 'Code' as const, path: scadPath },
@@ -86,6 +100,7 @@ export default function ModelDetailView() {
 
     const renderActiveTab = () => {
         switch (activeTab) {
+            case 'PNG': return pngPath ? <PngViewer pngPath={pngPath} /> : <div className="flex items-center justify-center h-full text-gray-500">Loading image...</div>;
             case '3D': return stlPath ? <ThreeDViewer stlPath={stlPath} /> : <div className="flex items-center justify-center h-full text-gray-500">Loading 3D model...</div>;
             case 'Graph': return svgPath ? <SvgViewer svgPath={svgPath} /> : <div className="flex items-center justify-center h-full text-gray-500">Loading graph...</div>;
             case 'Code': return scadPath ? <CodeViewer scadPath={scadPath} /> : <div className="flex items-center justify-center h-full text-gray-500">Loading code...</div>;

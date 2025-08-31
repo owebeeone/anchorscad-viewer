@@ -29,6 +29,8 @@ import {
     SELECTED_SHAPE_NAME_TAP,
     SELECTED_EXAMPLE_NAME_TAP,
     SELECTED_PART_NAME_TAP,
+    ACTIVE_TAB,
+    ACTIVE_TAB_TAP,
     DEFAULT_PART
 } from './grips';
 
@@ -273,3 +275,4 @@ export const SelectedModuleNameTap = createAtomValueTap(SELECTED_MODULE_NAME, { 
 export const SelectedShapeNameTap = createAtomValueTap(SELECTED_SHAPE_NAME, { handleGrip: SELECTED_SHAPE_NAME_TAP });
 export const SelectedExampleNameTap = createAtomValueTap(SELECTED_EXAMPLE_NAME, { handleGrip: SELECTED_EXAMPLE_NAME_TAP });
 export const SelectedPartNameTap = createAtomValueTap(SELECTED_PART_NAME, { initial: DEFAULT_PART, handleGrip: SELECTED_PART_NAME_TAP });
+export const ActiveTabTap = createAtomValueTap(ACTIVE_TAB, { handleGrip: ACTIVE_TAB_TAP });

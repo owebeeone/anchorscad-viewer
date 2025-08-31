@@ -21,6 +21,11 @@ export const SELECTED_SHAPE_NAME_TAP = defineGrip<AtomTapHandle<string | undefin
 export const SELECTED_EXAMPLE_NAME_TAP = defineGrip<AtomTapHandle<string | undefined>>('Selection.ExampleName.Tap');
 export const SELECTED_PART_NAME_TAP = defineGrip<AtomTapHandle<string | undefined>>('Selection.PartName.Tap');
 
+// --- UI State Grips ---
+export type ViewerTab = 'PNG' | '3D' | 'Graph' | 'Code' | 'Error';
+export const ACTIVE_TAB = defineGrip<ViewerTab>('UI.ActiveTab', 'PNG');
+export const ACTIVE_TAB_TAP = defineGrip<AtomTapHandle<ViewerTab>>('UI.ActiveTab.Tap');
+
 
 // --- Raw Data Grip ---
 
