@@ -11,29 +11,33 @@ import {
     createModelResourceProviderTap,
     createCodeTextLoaderTap,
     createSourceCodeLoaderTap,
-    ViewModeTap,
-    SelectedModuleNameTap,
-    SelectedShapeNameTap,
-    SelectedExampleNameTap,
-    SelectedPartNameTap,
-    ActiveTabTap
+    createModuleFilterTap,
+    ViewModeTap as _ViewModeTap,
+    ModuleFilterStringTap as _ModuleFilterStringTap,
+    SelectedModuleNameTap as _SelectedModuleNameTap,
+    SelectedShapeNameTap as _SelectedShapeNameTap,
+    SelectedExampleNameTap as _SelectedExampleNameTap,
+    SelectedPartNameTap as _SelectedPartNameTap,
+    ActiveTabTap as _ActiveTabTap
 } from './taps.ts'
 
 // Register all data provider taps with the GROK engine
 grok.registerTap(createStatusJsonFetcherTap());
 grok.registerTap(createGlobalNavigationDataProviderTap());
+grok.registerTap(createModuleFilterTap());
 grok.registerTap(createModuleSpecificNavigationTap());
 grok.registerTap(createModelResourceProviderTap());
 grok.registerTap(createCodeTextLoaderTap());
 grok.registerTap(createSourceCodeLoaderTap());
 
 // Register all state management taps
-grok.registerTap(ViewModeTap);
-grok.registerTap(SelectedModuleNameTap);
-grok.registerTap(SelectedShapeNameTap);
-grok.registerTap(SelectedExampleNameTap);
-grok.registerTap(SelectedPartNameTap);
-grok.registerTap(ActiveTabTap);
+grok.registerTap(_ViewModeTap);
+grok.registerTap(_ModuleFilterStringTap);
+grok.registerTap(_SelectedModuleNameTap);
+grok.registerTap(_SelectedShapeNameTap);
+grok.registerTap(_SelectedExampleNameTap);
+grok.registerTap(_SelectedPartNameTap);
+grok.registerTap(_ActiveTabTap);
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

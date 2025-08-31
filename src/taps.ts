@@ -11,6 +11,9 @@ import {
 import {
     RAW_STATUS_JSON,
     ALL_MODULES_LIST,
+    FILTERED_MODULES_LIST,
+    MODULE_FILTER_STRING,
+    MODULE_FILTER_STRING_TAP,
     MODELS_WITH_ERRORS_LIST,
     SELECTED_MODULE_NAME,
     MODELS_IN_SELECTED_MODULE_LIST,
@@ -88,6 +91,50 @@ export function createGlobalNavigationDataProviderTap(): Tap {
 
             return updates;
         },
+    });
+}
+
+// Tap 2a: Filter modules by space-separated substrings and add a preview image
+export function createModuleFilterTap(): Tap {
+    type Outs = { filteredModules: typeof FILTERED_MODULES_LIST };
+    type Dest = { allModules: typeof ALL_MODULES_LIST; filter: typeof MODULE_FILTER_STRING };
+    return createFunctionTap<Outs, any, Dest>({
+        provides: [FILTERED_MODULES_LIST],
+        destinationParamGrips: [ALL_MODULES_LIST, MODULE_FILTER_STRING],
+        compute: ({ getDestParam }) => {
+            const modules = getDestParam(ALL_MODULES_LIST) as any[] | undefined;
+            const rawFilter = getDestParam(MODULE_FILTER_STRING) as unknown as string | undefined;
+            const filterStr = (rawFilter || '').toString().trim();
+            const updates = new Map<Grip<any>, any>();
+            if (!modules) return updates;
+
+            const tokens = filterStr.length > 0
+                ? filterStr.split(/\s+/).filter(Boolean).map((t: string) => t.toLowerCase())
+                : [];
+
+            let filtered = modules;
+            if (tokens.length > 0) {
+                filtered = modules.filter((m: any) => {
+                    const hay = (m.module_name || '').toLowerCase();
+                    return tokens.every((tok: string) => hay.includes(tok));
+                });
+            }
+
+            // Augment with a preview image from any example within shape_results
+            const augmented = filtered.map((m: any) => {
+                let preview: string | undefined;
+                for (const s of (m.shape_results || [])) {
+                    for (const e of (s.example_results || [])) {
+                        if (e.png_file) { preview = e.png_file; break; }
+                    }
+                    if (preview) break;
+                }
+                return { ...m, preview_png: preview };
+            });
+
+            updates.set(FILTERED_MODULES_LIST, augmented);
+            return updates;
+        }
     });
 }
 
@@ -371,3 +418,4 @@ export const SelectedShapeNameTap = createAtomValueTap(SELECTED_SHAPE_NAME, { ha
 export const SelectedExampleNameTap = createAtomValueTap(SELECTED_EXAMPLE_NAME, { handleGrip: SELECTED_EXAMPLE_NAME_TAP });
 export const SelectedPartNameTap = createAtomValueTap(SELECTED_PART_NAME, { initial: DEFAULT_PART, handleGrip: SELECTED_PART_NAME_TAP });
 export const ActiveTabTap = createAtomValueTap(ACTIVE_TAB, { handleGrip: ACTIVE_TAB_TAP });
+export const ModuleFilterStringTap = createAtomValueTap(MODULE_FILTER_STRING, { handleGrip: MODULE_FILTER_STRING_TAP });

@@ -36,6 +36,9 @@ export const RAW_STATUS_JSON = defineGrip<any | undefined>('Data.RawStatusJson')
 export const ALL_MODULES_LIST = defineGrip<any[] | undefined>('Data.Navigation.AllModules');
 export const MODELS_IN_SELECTED_MODULE_LIST = defineGrip<any[] | undefined>('Data.Navigation.ModelsInModule');
 export const MODELS_WITH_ERRORS_LIST = defineGrip<any[] | undefined>('Data.Navigation.ModelsWithErrors');
+export const FILTERED_MODULES_LIST = defineGrip<any[] | undefined>('Data.Navigation.FilteredModules');
+export const MODULE_FILTER_STRING = defineGrip<string>('UI.ModuleFilterString', '');
+export const MODULE_FILTER_STRING_TAP = defineGrip<AtomTapHandle<string>>('UI.ModuleFilterString.Tap');
 
 // --- Derived Content Grips (Outputs) ---
 

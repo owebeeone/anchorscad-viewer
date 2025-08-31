@@ -2,6 +2,9 @@ import { useGrip, useGripSetter } from '@owebeeone/grip-react';
 import { useEffect, useRef } from 'react';
 import {
     ALL_MODULES_LIST,
+    FILTERED_MODULES_LIST,
+    MODULE_FILTER_STRING_TAP,
+    MODULE_FILTER_STRING,
     MODELS_IN_SELECTED_MODULE_LIST,
     SELECTED_MODULE_NAME,
     SELECTED_MODULE_NAME_TAP,
@@ -14,13 +17,17 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import 'swiper/css';
 
 const ModuleList = () => {
-    const modules = useGrip(ALL_MODULES_LIST);
+    const filteredModules = useGrip(FILTERED_MODULES_LIST);
+    const allModules = useGrip(ALL_MODULES_LIST);
+    const modules = filteredModules ?? allModules;
     const models = useGrip(MODELS_IN_SELECTED_MODULE_LIST);
     const selectedModule = useGrip(SELECTED_MODULE_NAME);
     const setModule = useGripSetter(SELECTED_MODULE_NAME_TAP);
     const setShape = useGripSetter(SELECTED_SHAPE_NAME_TAP);
     const setExample = useGripSetter(SELECTED_EXAMPLE_NAME_TAP);
     const setPart = useGripSetter(SELECTED_PART_NAME_TAP);
+    const setFilter = useGripSetter(MODULE_FILTER_STRING_TAP);
+    const filterValue = useGrip(MODULE_FILTER_STRING);
 
 
     const prevModuleRef = useRef<string | undefined>();
@@ -46,17 +53,52 @@ const ModuleList = () => {
         setPart(DEFAULT_PART);
     }
 
+    const formatName = (name: string) => {
+        const parts = name.split('.');
+        const tail = parts.slice(-2).join('.');
+        if (tail.length <= 30) return tail;
+        return '…' + tail.slice(-29);
+    };
+
     return (
         <div className="h-full overflow-y-auto bg-gray-800/50">
-            <h2 className="text-md font-semibold p-2 sticky top-0 bg-gray-800/80 backdrop-blur-sm">Modules</h2>
-            <ul>
+            <div className="sticky top-0 bg-gray-800/80 backdrop-blur-sm p-2 space-y-2 border-b border-gray-700">
+                <h2 className="text-md font-semibold">Modules</h2>
+                <div className="relative">
+                    <input
+                        type="text"
+                        placeholder="Filter modules (space-separated keywords)"
+                        className="w-full pr-7 px-2 py-1 text-sm rounded bg-gray-700 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={filterValue}
+                        onChange={(e) => setFilter(e.target.value)}
+                    />
+                    {filterValue && filterValue.length > 0 && (
+                        <button
+                            type="button"
+                            onClick={() => setFilter("")}
+                            className="absolute inset-y-0 right-1 my-auto h-6 w-6 flex items-center justify-center rounded hover:bg-gray-600 text-gray-300 hover:text-white"
+                            aria-label="Clear filter"
+                            title="Clear filter"
+                        >
+                            ×
+                        </button>
+                    )}
+                </div>
+            </div>
+            <ul className="divide-y divide-gray-800">
                 {modules.map((module: any) => (
                     <li key={module.module_name}>
                         <button
                             onClick={() => handleSelect(module.module_name)}
-                            className={`w-full text-left p-2 text-sm truncate ${selectedModule === module.module_name ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'}`}
+                            className={`w-full text-left p-2 flex items-center gap-2 hover:bg-gray-700 ${selectedModule === module.module_name ? 'bg-blue-600/30' : ''}`}
+                            title={module.module_name}
                         >
-                            {module.module_name}
+                            <img
+                                src={module.preview_png || `https://placehold.co/40x40/1f2937/d1d5db?text=\u25A1`}
+                                alt="preview"
+                                className="w-10 h-10 object-contain rounded border border-gray-700 bg-gray-900"
+                            />
+                            <span className="text-sm text-gray-200 truncate">{formatName(module.module_name)}</span>
                         </button>
                     </li>
                 ))}
