@@ -103,7 +103,7 @@ export default function ModelDetailView() {
             case 'PNG': return pngPath ? <PngViewer pngPath={pngPath} /> : <div className="flex items-center justify-center h-full text-gray-500">Loading image...</div>;
             case '3D': return stlPath ? <ThreeDViewer stlPath={stlPath} /> : <div className="flex items-center justify-center h-full text-gray-500">Loading 3D model...</div>;
             case 'Graph': return svgPath ? <SvgViewer svgPath={svgPath} /> : <div className="flex items-center justify-center h-full text-gray-500">Loading graph...</div>;
-            case 'Code': return scadPath ? <CodeViewer scadPath={scadPath} /> : <div className="flex items-center justify-center h-full text-gray-500">Loading code...</div>;
+            case 'Code': return scadPath ? <CodeViewer /> : <div className="flex items-center justify-center h-full text-gray-500">Loading code...</div>;
             case 'Error': return stderrPath ? <ErrorLogViewer stderrPath={stderrPath} /> : <div className="flex items-center justify-center h-full text-gray-500">No error log available</div>;
             default: return null;
         }

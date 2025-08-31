@@ -9,6 +9,7 @@ import {
     createGlobalNavigationDataProviderTap,
     createModuleSpecificNavigationTap,
     createModelResourceProviderTap,
+    createCodeTextLoaderTap,
     ViewModeTap,
     SelectedModuleNameTap,
     SelectedShapeNameTap,
@@ -22,6 +23,7 @@ grok.registerTap(createStatusJsonFetcherTap());
 grok.registerTap(createGlobalNavigationDataProviderTap());
 grok.registerTap(createModuleSpecificNavigationTap());
 grok.registerTap(createModelResourceProviderTap());
+grok.registerTap(createCodeTextLoaderTap());
 
 // Register all state management taps
 grok.registerTap(ViewModeTap);

@@ -1,5 +1,6 @@
 import {
     createAsyncHomeValueTap,
+    createAsyncValueTap,
     createAsyncMultiTap,
     createFunctionTap,
     createAtomValueTap,
@@ -31,7 +32,9 @@ import {
     SELECTED_PART_NAME_TAP,
     ACTIVE_TAB,
     ACTIVE_TAB_TAP,
-    DEFAULT_PART
+    DEFAULT_PART,
+    CURRENT_CODE_TEXT,
+    CURRENT_CODE_TEXT_TAP
 } from './grips';
 
 // Tap 1: Fetches the status.json file once and caches it.
@@ -123,7 +126,6 @@ export function createModuleSpecificNavigationTap(): Tap {
         },
     });
 }
-
 
 // Tap 4: Provides all resources for the currently selected model/part.
 export function createModelResourceProviderTap(): Tap {
@@ -265,6 +267,28 @@ export function createModelResourceProviderTap(): Tap {
             
             return updates;
         }
+    });
+}
+
+// Tap 5: Load code text for CURRENT_SCAD_PATH as destination param (optimized decode)
+export function createCodeTextLoaderTap(): Tap {
+    return createAsyncValueTap<string | undefined>({
+        provides: CURRENT_CODE_TEXT,
+        destinationParamGrips: [CURRENT_SCAD_PATH],
+        cacheTtlMs: 5 * 60 * 1000,
+        requestKeyOf: (params) => {
+            const path = params.getDestParam(CURRENT_SCAD_PATH);
+            return path || undefined;
+        },
+        fetcher: async (params, signal) => {
+            const path = params.getDestParam(CURRENT_SCAD_PATH);
+            if (!path) return undefined;
+            const res = await fetch(`/${path}`, { signal });
+            if (!res.ok) throw new Error(`Failed to fetch ${path}`);
+            // Faster and explicit decode for large files
+            const buf = await res.arrayBuffer();
+            return new TextDecoder('utf-8').decode(buf, { stream: true });
+        },
     });
 }
 

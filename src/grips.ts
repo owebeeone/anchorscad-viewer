@@ -46,3 +46,5 @@ export const CURRENT_PNG_PATH = defineGrip<string | undefined>('Model.PngPath');
 export const CURRENT_SCAD_PATH = defineGrip<string | undefined>('Model.ScadPath');
 export const CURRENT_GRAPH_SVG_PATH = defineGrip<string | undefined>('Model.GraphSvgPath');
 export const CURRENT_STDERR_PATH = defineGrip<string | undefined>('Model.StderrPath');
+export const CURRENT_CODE_TEXT = defineGrip<string | undefined>('Model.CodeText');
+export const CURRENT_CODE_TEXT_TAP = defineGrip<AtomTapHandle<string | undefined>>('Model.CodeText.Tap');
