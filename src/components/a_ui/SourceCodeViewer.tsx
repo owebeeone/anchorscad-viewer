@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from 'react';
 import { useGrip } from '@owebeeone/grip-react';
 import { 
   CURRENT_SOURCE_CODE_TEXT,
@@ -14,6 +15,22 @@ export default function SourceCodeViewer() {
   const MAX_HILITE = 30_000; // ~300KB threshold for highlighting
   const canHighlight = typeof code === 'string' && code.length > 0 && code.length <= MAX_HILITE;
 
+  const highlightLine = useMemo(() => {
+    if (!lineNumber || !code) return undefined;
+    const totalLines = code.split('\n').length;
+    if (lineNumber < 1) return 1;
+    if (lineNumber > totalLines) return totalLines;
+    return lineNumber;
+  }, [lineNumber, code]);
+
+  useEffect(() => {
+    if (!highlightLine) return;
+    const el = document.getElementById(`source-line-${highlightLine}`);
+    if (el && typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [highlightLine, code]);
+
   return (
     <div className="h-full w-full flex flex-col">
       <div className="flex-shrink-0 flex items-center gap-3 px-3 py-2 bg-gray-800 border-b border-gray-700 text-sm">
@@ -27,7 +44,23 @@ export default function SourceCodeViewer() {
       </div>
       <div className="flex-grow min-h-0 overflow-auto">
         {canHighlight ? (
-          <SyntaxHighlighter language="python" style={dracula} customStyle={{ margin: 0, height: '100%' }}>
+          <SyntaxHighlighter
+            language="python"
+            style={dracula}
+            customStyle={{ margin: 0, height: '100%' }}
+            showLineNumbers
+            wrapLines
+            lineNumberStyle={{ opacity: 0.8 }}
+            lineProps={(line) => {
+              const isTarget = highlightLine === line;
+              return {
+                id: `source-line-${line}`,
+                style: isTarget
+                  ? { backgroundColor: 'rgba(255, 255, 0, 0.16)' }
+                  : undefined,
+              } as any;
+            }}
+          >
             {code}
           </SyntaxHighlighter>
         ) : (
