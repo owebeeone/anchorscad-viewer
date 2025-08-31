@@ -22,7 +22,7 @@ export const SELECTED_EXAMPLE_NAME_TAP = defineGrip<AtomTapHandle<string | undef
 export const SELECTED_PART_NAME_TAP = defineGrip<AtomTapHandle<string | undefined>>('Selection.PartName.Tap');
 
 // --- UI State Grips ---
-export type ViewerTab = 'PNG' | '3D' | 'Graph' | 'Code' | 'Error';
+export type ViewerTab = 'PNG' | '3D' | 'Graph' | 'Code' | 'Scad Code' | 'Error';
 export const ACTIVE_TAB = defineGrip<ViewerTab>('UI.ActiveTab', 'PNG');
 export const ACTIVE_TAB_TAP = defineGrip<AtomTapHandle<ViewerTab>>('UI.ActiveTab.Tap');
 
@@ -48,3 +48,9 @@ export const CURRENT_GRAPH_SVG_PATH = defineGrip<string | undefined>('Model.Grap
 export const CURRENT_STDERR_PATH = defineGrip<string | undefined>('Model.StderrPath');
 export const CURRENT_CODE_TEXT = defineGrip<string | undefined>('Model.CodeText');
 export const CURRENT_CODE_TEXT_TAP = defineGrip<AtomTapHandle<string | undefined>>('Model.CodeText.Tap');
+
+// --- Source Code (Python) Grips ---
+export const CURRENT_SOURCE_CODE_TEXT = defineGrip<string | undefined>('Model.SourceCodeText');
+export const CURRENT_SOURCE_GITHUB_URL = defineGrip<string | undefined>('Model.SourceGithubUrl');
+export const CURRENT_SOURCE_RAW_URL = defineGrip<string | undefined>('Model.SourceRawUrl');
+export const CURRENT_SOURCE_LINE_NUMBER = defineGrip<number | undefined>('Model.SourceLineNumber');

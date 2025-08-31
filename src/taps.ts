@@ -34,7 +34,10 @@ import {
     ACTIVE_TAB_TAP,
     DEFAULT_PART,
     CURRENT_CODE_TEXT,
-    CURRENT_CODE_TEXT_TAP
+    CURRENT_SOURCE_CODE_TEXT,
+    CURRENT_SOURCE_GITHUB_URL,
+    CURRENT_SOURCE_RAW_URL,
+    CURRENT_SOURCE_LINE_NUMBER
 } from './grips';
 
 // Tap 1: Fetches the status.json file once and caches it.
@@ -93,6 +96,7 @@ export function createModuleSpecificNavigationTap(): Tap {
     // Define the grip types for this tap
     type Outs = {
         modelsInModule: typeof MODELS_IN_SELECTED_MODULE_LIST;
+        sourceRawUrl: typeof CURRENT_SOURCE_RAW_URL;
     };
     type Home = {
         rawStatus: typeof RAW_STATUS_JSON;
@@ -102,7 +106,7 @@ export function createModuleSpecificNavigationTap(): Tap {
     };
     
     return createFunctionTap<Outs, Home, Dest>({
-        provides: [MODELS_IN_SELECTED_MODULE_LIST],
+        provides: [MODELS_IN_SELECTED_MODULE_LIST, CURRENT_SOURCE_RAW_URL],
         homeParamGrips: [RAW_STATUS_JSON],
         destinationParamGrips: [SELECTED_MODULE_NAME],
         compute: ({ getHomeParam, getDestParam }) => {
@@ -122,6 +126,30 @@ export function createModuleSpecificNavigationTap(): Tap {
             ) || [];
             updates.set(MODELS_IN_SELECTED_MODULE_LIST, models);
 
+            // Compute a resolvable raw URL or local path for the module's python source
+            const repo = module?.source_repo;
+            if (repo && repo.repo_name && repo.commit_id && repo.file_path_in_repo) {
+                const repoName = repo.repo_name;
+                const commitId = repo.commit_id;
+                const filePathInRepo = repo.file_path_in_repo;
+                let rawSourceSpecifier: string | undefined = undefined;
+                if (repo.is_on_origin === true) {
+                    rawSourceSpecifier = `https://raw.githubusercontent.com/${repoName}/${commitId}${filePathInRepo}`;
+                } else {
+                    const localSource: string | undefined = module?.source_file;
+                    if (localSource) {
+                        rawSourceSpecifier = localSource;
+                    } else {
+                        // Guess: copy placed under public/output with 'src/' stripped
+                        const withoutSrc = (filePathInRepo as string).replace(/^\/?src\//, '');
+                        rawSourceSpecifier = `output/${withoutSrc}`;
+                    }
+                }
+                updates.set(CURRENT_SOURCE_RAW_URL, rawSourceSpecifier);
+            } else {
+                updates.set(CURRENT_SOURCE_RAW_URL, undefined);
+            }
+
             return updates;
         },
     });
@@ -138,12 +166,15 @@ export function createModelResourceProviderTap(): Tap {
         scadPath: typeof CURRENT_SCAD_PATH;
         graphPath: typeof CURRENT_GRAPH_SVG_PATH;
         stderrPath: typeof CURRENT_STDERR_PATH;
+        sourceGithubUrl: typeof CURRENT_SOURCE_GITHUB_URL;
+        sourceLineNumber: typeof CURRENT_SOURCE_LINE_NUMBER;
     };
     
     return createAsyncMultiTap<Outs, any>({
         provides: [
             CURRENT_MODEL_DATA, CURRENT_MODEL_PARTS, CURRENT_STL_PATH,
-            CURRENT_PNG_PATH, CURRENT_SCAD_PATH, CURRENT_GRAPH_SVG_PATH, CURRENT_STDERR_PATH
+            CURRENT_PNG_PATH, CURRENT_SCAD_PATH, CURRENT_GRAPH_SVG_PATH, CURRENT_STDERR_PATH,
+            CURRENT_SOURCE_GITHUB_URL, CURRENT_SOURCE_LINE_NUMBER
         ],
         homeParamGrips: [RAW_STATUS_JSON],
         destinationParamGrips: [SELECTED_MODULE_NAME, SELECTED_SHAPE_NAME, SELECTED_EXAMPLE_NAME, SELECTED_PART_NAME],
@@ -193,6 +224,17 @@ export function createModelResourceProviderTap(): Tap {
                 return null;
             }
 
+            // Compute model-specific source link data
+            const lineNumber: number | undefined = shape?.line_number;
+            let githubUrl: string | undefined = undefined;
+            const repo = module?.source_repo;
+            if (repo && repo.repo_name && repo.commit_id && repo.file_path_in_repo && repo.service === 'github') {
+                const repoName = repo.repo_name;
+                const commitId = repo.commit_id;
+                const filePathInRepo = repo.file_path_in_repo;
+                githubUrl = `https://github.com/${repoName}/blob/${commitId}${filePathInRepo}${lineNumber ? `#L${lineNumber}` : ''}`;
+            }
+
             // Return an object containing both main example and part data (if selected)
             let currentData;
             if (partName && partName !== DEFAULT_PART) {
@@ -214,7 +256,9 @@ export function createModelResourceProviderTap(): Tap {
             
             const result = {
                 mainExample: example,
-                currentData
+                currentData,
+                sourceGithubUrl: githubUrl,
+                sourceLineNumber: lineNumber
             };
             
             console.log('ModelResourceProviderTap: Returning result:', {
@@ -222,7 +266,9 @@ export function createModelResourceProviderTap(): Tap {
                 hasCurrentData: !!result.currentData,
                 currentDataIsMain: result.currentData === result.mainExample,
                 currentDataStl: result.currentData?.stl_file,
-                mainStl: result.mainExample?.stl_file
+                mainStl: result.mainExample?.stl_file,
+                sourceGithubUrl: result.sourceGithubUrl,
+                sourceLineNumber: result.sourceLineNumber
             });
             return result;
         },
@@ -264,6 +310,8 @@ export function createModelResourceProviderTap(): Tap {
             // Graph and error files are always from the main example
             updates.set(CURRENT_GRAPH_SVG_PATH, mainExample?.graph_svg_file);
             updates.set(CURRENT_STDERR_PATH, mainExample?.error_file_name);
+            updates.set(CURRENT_SOURCE_GITHUB_URL, result.sourceGithubUrl);
+            updates.set(CURRENT_SOURCE_LINE_NUMBER, result.sourceLineNumber);
             
             return updates;
         }
@@ -289,6 +337,29 @@ export function createCodeTextLoaderTap(): Tap {
             const buf = await res.arrayBuffer();
             return new TextDecoder('utf-8').decode(buf, { stream: true });
         },
+    });
+}
+
+// Tap 6: Load Python source code based on status.json source_repo + shape line_number
+export function createSourceCodeLoaderTap(): Tap {
+    return createAsyncValueTap<string | undefined>({
+        provides: CURRENT_SOURCE_CODE_TEXT,
+        destinationParamGrips: [CURRENT_SOURCE_RAW_URL],
+        cacheTtlMs: 5 * 60 * 1000,
+        requestKeyOf: (params) => {
+            const spec = params.getDestParam(CURRENT_SOURCE_RAW_URL);
+            return spec || undefined;
+        },
+        fetcher: async (params, signal) => {
+            const spec = params.getDestParam(CURRENT_SOURCE_RAW_URL);
+            if (!spec) return undefined;
+            const isAbsolute = /^https?:\/\//i.test(spec);
+            const url = isAbsolute ? spec : `/${spec}`;
+            const res = await fetch(url, { signal });
+            if (!res.ok) return undefined;
+            const buf = await res.arrayBuffer();
+            return new TextDecoder('utf-8').decode(buf, { stream: true });
+        }
     });
 }
 

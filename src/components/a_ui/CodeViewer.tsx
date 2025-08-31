@@ -3,6 +3,7 @@ import { CURRENT_CODE_TEXT } from '../../grips';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
+// Displays OpenSCAD code
 export default function CodeViewer() {
   const code = useGrip(CURRENT_CODE_TEXT);
   const MAX_HILITE = 30_000; // ~300KB threshold for highlighting
