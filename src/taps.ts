@@ -192,8 +192,16 @@ export function createModuleSpecificNavigationTap(): Tap {
                         rawSourceSpecifier = `output/${withoutSrc}`;
                     }
                 }
+                console.log('ModuleSpecificNavigationTap: computed raw source specifier', {
+                    moduleName,
+                    repoService: repo.service,
+                    isOnOrigin: repo.is_on_origin,
+                    filePathInRepo,
+                    rawSourceSpecifier
+                });
                 updates.set(CURRENT_SOURCE_RAW_URL, rawSourceSpecifier);
             } else {
+                console.warn('ModuleSpecificNavigationTap: missing repo info for module', { moduleName, hasRepo: !!repo });
                 updates.set(CURRENT_SOURCE_RAW_URL, undefined);
             }
 
@@ -281,6 +289,14 @@ export function createModelResourceProviderTap(): Tap {
                 const filePathInRepo = repo.file_path_in_repo;
                 githubUrl = `https://github.com/${repoName}/blob/${commitId}${filePathInRepo}${lineNumber ? `#L${lineNumber}` : ''}`;
             }
+            console.log('ModelResourceProviderTap: source link computation', {
+                moduleName,
+                shapeName,
+                lineNumber,
+                hasRepo: !!repo,
+                repoService: repo?.service,
+                githubUrl
+            });
 
             // Return an object containing both main example and part data (if selected)
             let currentData;
@@ -395,6 +411,7 @@ export function createSourceCodeLoaderTap(): Tap {
         cacheTtlMs: 5 * 60 * 1000,
         requestKeyOf: (params) => {
             const spec = params.getDestParam(CURRENT_SOURCE_RAW_URL);
+            console.log('SourceCodeLoaderTap requestKeyOf', { spec });
             return spec || undefined;
         },
         fetcher: async (params, signal) => {
@@ -402,10 +419,19 @@ export function createSourceCodeLoaderTap(): Tap {
             if (!spec) return undefined;
             const isAbsolute = /^https?:\/\//i.test(spec);
             const url = isAbsolute ? spec : `/${spec}`;
-            const res = await fetch(url, { signal });
-            if (!res.ok) return undefined;
-            const buf = await res.arrayBuffer();
-            return new TextDecoder('utf-8').decode(buf, { stream: true });
+            console.log('SourceCodeLoaderTap fetcher: fetching', { spec, isAbsolute, url });
+            try {
+                const res = await fetch(url, { signal });
+                console.log('SourceCodeLoaderTap fetcher: response', { ok: res.ok, status: res.status });
+                if (!res.ok) return undefined;
+                const buf = await res.arrayBuffer();
+                const text = new TextDecoder('utf-8').decode(buf, { stream: true });
+                console.log('SourceCodeLoaderTap fetcher: loaded bytes', { length: text?.length });
+                return text;
+            } catch (e) {
+                console.warn('SourceCodeLoaderTap fetcher: error during fetch', e);
+                return undefined;
+            }
         }
     });
 }
