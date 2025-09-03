@@ -22,7 +22,7 @@ export const SELECTED_EXAMPLE_NAME_TAP = defineGrip<AtomTapHandle<string | undef
 export const SELECTED_PART_NAME_TAP = defineGrip<AtomTapHandle<string | undefined>>('Selection.PartName.Tap');
 
 // --- UI State Grips ---
-export type ViewerTab = 'PNG' | '3D' | 'Graph' | 'Code' | 'Scad Code' | 'Error';
+export type ViewerTab = 'PNG' | 'STL' | '3MF' | 'Graph' | 'Code' | 'Scad' | 'Error';
 export const ACTIVE_TAB = defineGrip<ViewerTab>('UI.ActiveTab', 'PNG');
 export const ACTIVE_TAB_TAP = defineGrip<AtomTapHandle<ViewerTab>>('UI.ActiveTab.Tap');
 
@@ -45,10 +45,13 @@ export const MODULE_FILTER_STRING_TAP = defineGrip<AtomTapHandle<string>>('UI.Mo
 export const CURRENT_MODEL_DATA = defineGrip<any | undefined>('Model.Data');
 export const CURRENT_MODEL_PARTS = defineGrip<any[] | undefined>('Model.Parts');
 export const CURRENT_STL_PATH = defineGrip<string | undefined>('Model.StlPath');
+export const CURRENT_3MF_PATH = defineGrip<string | undefined>('Model.3mfPath');
 export const CURRENT_PNG_PATH = defineGrip<string | undefined>('Model.PngPath');
 export const CURRENT_SCAD_PATH = defineGrip<string | undefined>('Model.ScadPath');
 export const CURRENT_GRAPH_SVG_PATH = defineGrip<string | undefined>('Model.GraphSvgPath');
 export const CURRENT_STDERR_PATH = defineGrip<string | undefined>('Model.StderrPath');
+export const CURRENT_STDERR_LEN = defineGrip<number | undefined>('Model.error_file_size');
+
 export const CURRENT_CODE_TEXT = defineGrip<string | undefined>('Model.CodeText');
 export const CURRENT_CODE_TEXT_TAP = defineGrip<AtomTapHandle<string | undefined>>('Model.CodeText.Tap');
 

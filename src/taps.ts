@@ -40,7 +40,9 @@ import {
     CURRENT_SOURCE_CODE_TEXT,
     CURRENT_SOURCE_GITHUB_URL,
     CURRENT_SOURCE_RAW_URL,
-    CURRENT_SOURCE_LINE_NUMBER
+    CURRENT_SOURCE_LINE_NUMBER,
+    CURRENT_3MF_PATH,
+    CURRENT_STDERR_LEN
 } from './grips';
 
 // Tap 1: Fetches the status.json file once and caches it.
@@ -219,6 +221,7 @@ export function createModelResourceProviderTap(): Tap {
         stlPath: typeof CURRENT_STL_PATH;
         pngPath: typeof CURRENT_PNG_PATH;
         scadPath: typeof CURRENT_SCAD_PATH;
+        threeMfPath: typeof CURRENT_3MF_PATH;
         graphPath: typeof CURRENT_GRAPH_SVG_PATH;
         stderrPath: typeof CURRENT_STDERR_PATH;
         sourceGithubUrl: typeof CURRENT_SOURCE_GITHUB_URL;
@@ -229,7 +232,7 @@ export function createModelResourceProviderTap(): Tap {
         provides: [
             CURRENT_MODEL_DATA, CURRENT_MODEL_PARTS, CURRENT_STL_PATH,
             CURRENT_PNG_PATH, CURRENT_SCAD_PATH, CURRENT_GRAPH_SVG_PATH, CURRENT_STDERR_PATH,
-            CURRENT_SOURCE_GITHUB_URL, CURRENT_SOURCE_LINE_NUMBER
+            CURRENT_SOURCE_GITHUB_URL, CURRENT_SOURCE_LINE_NUMBER, CURRENT_3MF_PATH
         ],
         homeParamGrips: [RAW_STATUS_JSON],
         destinationParamGrips: [SELECTED_MODULE_NAME, SELECTED_SHAPE_NAME, SELECTED_EXAMPLE_NAME, SELECTED_PART_NAME],
@@ -367,12 +370,14 @@ export function createModelResourceProviderTap(): Tap {
                 : [];
             updates.set(CURRENT_MODEL_PARTS, partsArray);
             updates.set(CURRENT_STL_PATH, currentData?.stl_file);
+            updates.set(CURRENT_3MF_PATH, currentData?.f3mf_file);
             updates.set(CURRENT_PNG_PATH, currentData?.png_file);
             updates.set(CURRENT_SCAD_PATH, currentData?.scad_file);
             
             // Graph and error files are always from the main example
             updates.set(CURRENT_GRAPH_SVG_PATH, mainExample?.graph_svg_file);
             updates.set(CURRENT_STDERR_PATH, mainExample?.error_file_name);
+            updates.set(CURRENT_STDERR_LEN, mainExample?.error_file_size);
             updates.set(CURRENT_SOURCE_GITHUB_URL, result.sourceGithubUrl);
             updates.set(CURRENT_SOURCE_LINE_NUMBER, result.sourceLineNumber);
             

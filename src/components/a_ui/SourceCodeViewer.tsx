@@ -32,17 +32,8 @@ export default function SourceCodeViewer() {
   }, [highlightLine, code]);
 
   return (
-    <div className="h-full w-full flex flex-col">
-      <div className="flex-shrink-0 flex items-center gap-3 px-3 py-2 bg-gray-800 border-b border-gray-700 text-sm">
-        {githubUrl ? (
-          <a href={githubUrl} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 underline">
-            View on GitHub{lineNumber ? ` (line ${lineNumber})` : ''}
-          </a>
-        ) : (
-          <span className="text-gray-400">Source link unavailable</span>
-        )}
-      </div>
-      <div className="flex-grow min-h-0 overflow-auto">
+    <div className="h-full w-full relative">
+      <div className="h-full overflow-auto">
         {canHighlight ? (
           <SyntaxHighlighter
             language="python"
@@ -69,6 +60,27 @@ export default function SourceCodeViewer() {
           </pre>
         )}
       </div>
+      <button
+        onClick={() => {
+          try {
+            const blob = new Blob([code ?? ''], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'source.py';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          } catch (e) {
+            console.error('Failed to save source code:', e);
+          }
+        }}
+        className="absolute bottom-2 left-2 z-10 bg-gray-800/80 text-white text-xs px-2 py-1 rounded shadow hover:bg-gray-700"
+        title="Save source"
+      >
+        Save
+      </button>
     </div>
   );
 }
