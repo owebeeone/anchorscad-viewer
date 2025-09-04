@@ -265,6 +265,7 @@ export function createModelResourceProviderTap(): Tap {
         stderrPath: typeof CURRENT_STDERR_PATH;
         sourceGithubUrl: typeof CURRENT_SOURCE_GITHUB_URL;
         sourceLineNumber: typeof CURRENT_SOURCE_LINE_NUMBER;
+        pathsHtmlPath: typeof CURRENT_PATHS_HTML_PATH;
     };
     
     return createAsyncMultiTap<Outs, any>({
@@ -272,7 +273,7 @@ export function createModelResourceProviderTap(): Tap {
             CURRENT_MODEL_DATA, CURRENT_MODEL_PARTS, CURRENT_STL_PATH,
             CURRENT_PNG_PATH, CURRENT_SCAD_PATH, CURRENT_GRAPH_SVG_PATH, CURRENT_STDERR_PATH,
             CURRENT_SOURCE_GITHUB_URL, CURRENT_SOURCE_LINE_NUMBER, CURRENT_3MF_PATH,
-            CURRENT_OPENSCAD_STDERR_PATH, CURRENT_OPENSCAD_STDERR_LEN
+            CURRENT_OPENSCAD_STDERR_PATH, CURRENT_OPENSCAD_STDERR_LEN, CURRENT_PATHS_HTML_PATH
         ],
         homeParamGrips: [RAW_STATUS_JSON],
         destinationParamGrips: [SELECTED_MODULE_NAME, SELECTED_SHAPE_NAME, SELECTED_EXAMPLE_NAME, SELECTED_PART_NAME],
@@ -412,6 +413,7 @@ export function createModelResourceProviderTap(): Tap {
             updates.set(CURRENT_STL_PATH, currentData?.stl_file);
             updates.set(CURRENT_3MF_PATH, currentData?.f3mf_file);
             updates.set(CURRENT_PNG_PATH, currentData?.png_file);
+            updates.set(CURRENT_PATHS_HTML_PATH, currentData?.path_html_file);
             updates.set(CURRENT_SCAD_PATH, currentData?.scad_file);
             
             // Graph and error files are always from the main example
@@ -494,10 +496,10 @@ export function createSourceCodeLoaderTap(): Tap {
 
 // Resolve .paths.html (Phase 1) and optional .paths.json (Phase 2)
 export function createPathsPathResolverTap(): Tap {
-    type Outs = { pathsHtml: typeof CURRENT_PATHS_HTML_PATH; pathsJson: typeof CURRENT_PATHS_JSON_PATH };
+    type Outs = { pathsJson: typeof CURRENT_PATHS_JSON_PATH };
     type Dest = { png: typeof CURRENT_PNG_PATH; scad: typeof CURRENT_SCAD_PATH };
     return createFunctionTap<Outs, any, Dest>({
-        provides: [CURRENT_PATHS_HTML_PATH, CURRENT_PATHS_JSON_PATH],
+        provides: [CURRENT_PATHS_JSON_PATH],
         destinationParamGrips: [CURRENT_PNG_PATH, CURRENT_SCAD_PATH],
         compute: ({ getDestParam }) => {
             const updates = new Map<Grip<any>, any>();
@@ -505,9 +507,9 @@ export function createPathsPathResolverTap(): Tap {
 
             // Heuristics: assume .paths.html is alongside PNG with suffix replacement
             // example: foo_default_example.png -> foo_default_example.paths.html
-            const derive = (p?: string) => p?.replace(/\.png$/i, '.paths.html');
-            const htmlFromPng = derive(pngPath);
-            if (htmlFromPng) updates.set(CURRENT_PATHS_HTML_PATH, htmlFromPng);
+            // const derive = (p?: string) => p?.replace(/\.png$/i, '.paths.html');
+            // const htmlFromPng = derive(pngPath);
+            // if (htmlFromPng) updates.set(CURRENT_PATHS_HTML_PATH, htmlFromPng);
 
             // Placeholder for phase 2 JSON path (same base with .paths.json)
             const jsonFromPng = pngPath?.replace(/\.png$/i, '.paths.json');
@@ -523,15 +525,20 @@ export function createPathsDocumentLoaderTap(): Tap {
     return createAsyncMultiTap<{ view: typeof PATHS_VIEW_DATA }, any>({
         provides: [PATHS_VIEW_DATA],
         homeParamGrips: [RAW_STATUS_JSON],
-        destinationParamGrips: [CURRENT_PATHS_JSON_PATH, CURRENT_PATHS_HTML_PATH],
+        destinationParamGrips: [
+            CURRENT_PATHS_JSON_PATH,
+            CURRENT_PATHS_HTML_PATH
+        ],
         cacheTtlMs: 5 * 60 * 1000,
         requestKeyOf: (params) => {
-            return params.getDestParam(CURRENT_PATHS_JSON_PATH) || params.getDestParam(CURRENT_PATHS_HTML_PATH) || undefined;
+            const html = params.getDestParam(CURRENT_PATHS_HTML_PATH) as string | undefined;
+            const key = html;
+            
+            return key || undefined;
         },
         fetcher: async (params, signal) => {
             const jsonPath = params.getDestParam(CURRENT_PATHS_JSON_PATH) as string | undefined;
             const htmlPath = params.getDestParam(CURRENT_PATHS_HTML_PATH) as string | undefined;
-
             // Try JSON first
             if (jsonPath) {
                 try {

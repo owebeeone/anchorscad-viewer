@@ -172,12 +172,14 @@ export function computeLabels(params: LabelParams): { x: Label[]; y: Label[] } {
     return out;
   };
   const decimateY = (vals: number[]): Label[] => {
+    const vStep = Math.max(fontPx, minLabelPx); // baseline gap in pixels
+    const pairs = vals
+      .map((v) => ({ v, px: toPxY(v) }))
+      .filter((p) => isFinite(p.px))
+      .sort((a, b) => a.px - b.px); // ensure ascending pixel order regardless of axis direction
     const out: Label[] = [];
     let last = -Infinity;
-    const vStep = Math.max(fontPx, minLabelPx); // baseline gap in pixels
-    for (const v of vals) {
-      const px = toPxY(v);
-      if (!isFinite(px)) continue;
+    for (const { v, px } of pairs) {
       if (px - last >= vStep) {
         const text = format(v);
         out.push({ value: v, model: v, px, text, halfWidthPx: estimateWidthPx(text) / 2 });

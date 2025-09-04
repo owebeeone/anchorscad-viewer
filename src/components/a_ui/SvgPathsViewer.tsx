@@ -582,7 +582,11 @@ export default function SvgPathsViewer() {
                       <text fontSize={fontPx} textAnchor="end" alignmentBaseline="middle" fill="#101010">{fmt(l.value)}</text>
                     </g>
                   ))}
-                  {/* Mirror on right disabled to reduce overcrowding */}
+                  {labels.y.map((l) => (
+                    <g key={`lbl-y-r-${l.model}`} transform={`translate(${bounds.maxX + offsetModel}, ${l.model}) scale(${invScaleX}, ${invScaleY})`}>
+                      <text fontSize={fontPx} textAnchor="start" alignmentBaseline="middle" fill="#101010">{fmt(l.value)}</text>
+                    </g>
+                  ))}
                 </>
               );
             })()}
@@ -626,27 +630,52 @@ export default function SvgPathsViewer() {
               const gScaleX = Math.hypot(a || 1, b || 0);
               const gScaleY = Math.hypot(c || 0, d || 1);
               const pxPerModel = ((sx * gScaleX) + (sy * gScaleY)) / 2;
-              const dashModel = 6 / (pxPerModel || 1);
-              const gapModel = 4 / (pxPerModel || 1);
+              // Dash size ~ half of the smallest graduation spacing (in pixels)
+              // Keep helper dash lengths constant in screen px, independent of zoom
+              const baseDashPx = 12;
+              const baseGapPx = 12; // 50/50 duty cycle
+              const baseDashModel = baseDashPx / (pxPerModel || 1);
+              const baseGapModel = baseGapPx / (pxPerModel || 1);
+
+              const computeDashForLen = (lenModel: number) => {
+                // Ensure at least 2 cycles; if too short, shrink dash to fit
+                const cycle = baseDashModel + baseGapModel;
+                if (lenModel < 2 * cycle) {
+                  const adj = Math.max(1e-6, lenModel / 4);
+                  return { dash: adj, gap: adj };
+                }
+                return { dash: baseDashModel, gap: baseGapModel };
+              };
               const markerR = 3 / (pxPerModel || 1);
+              const isSelectedSeg = selectedSegIds.includes(seg.id);
+              const baseStroke = isSelectedSeg ? 3 : 2; // same as main path
+              const helperStroke = baseStroke * 2; // double overall
               if (type === 'arcto1') {
-                const [_startPoint, _endPoint, centerPoint] = pts as [number[], number[], number[]];
+                const [startPoint, endPoint, centerPoint] = pts as [number[], number[], number[]];
+                // Show center radii to both arc endpoints
+                const lenStart = Math.hypot(startPoint[0] - centerPoint[0], startPoint[1] - centerPoint[1]);
+                const lenEnd = Math.hypot(endPoint[0] - centerPoint[0], endPoint[1] - centerPoint[1]);
+                const ds = computeDashForLen(lenStart);
+                const de = computeDashForLen(lenEnd);
                 elements.push(
-                  <line key="arc-c1" x1={centerPoint[0]} y1={centerPoint[1]} x2={inspectRef.current!.point[0]} y2={inspectRef.current!.point[1]} stroke="blue" strokeDasharray={`${dashModel},${gapModel}`} strokeWidth={2} vectorEffect="non-scaling-stroke" />
+                  <line key="arc-c-start" x1={centerPoint[0]} y1={centerPoint[1]} x2={startPoint[0]} y2={startPoint[1]} stroke="blue" strokeDasharray={`${ds.dash},${ds.gap}`} strokeLinecap="butt" strokeWidth={helperStroke} vectorEffect="non-scaling-stroke" />
+                );
+                elements.push(
+                  <line key="arc-c-end" x1={centerPoint[0]} y1={centerPoint[1]} x2={endPoint[0]} y2={endPoint[1]} stroke="blue" strokeDasharray={`${de.dash},${de.gap}`} strokeLinecap="butt" strokeWidth={helperStroke} vectorEffect="non-scaling-stroke" />
                 );
                 elements.push(<circle key="arc-c" cx={centerPoint[0]} cy={centerPoint[1]} r={markerR} fill="blue" />);
                 elements.push(<circle key="arc-p" cx={inspectRef.current!.point[0]} cy={inspectRef.current!.point[1]} r={markerR} fill="yellow" />);
               } else if (type === 'splineto') {
                 const [p0, c1, c2, p3] = pts as [number[], number[], number[], number[]];
-                elements.push(<line key="c1" x1={p0[0]} y1={p0[1]} x2={c1[0]} y2={c1[1]} stroke="blue" strokeDasharray={`${dashModel},${gapModel}`} strokeWidth={2} vectorEffect="non-scaling-stroke" />);
-                elements.push(<line key="c2" x1={p3[0]} y1={p3[1]} x2={c2[0]} y2={c2[1]} stroke="blue" strokeDasharray={`${dashModel},${gapModel}`} strokeWidth={2} vectorEffect="non-scaling-stroke" />);
+                elements.push(<line key="c1" x1={p0[0]} y1={p0[1]} x2={c1[0]} y2={c1[1]} stroke="blue" strokeDasharray={`${baseDashModel},${baseGapModel}`} strokeWidth={2} vectorEffect="non-scaling-stroke" />);
+                elements.push(<line key="c2" x1={p3[0]} y1={p3[1]} x2={c2[0]} y2={c2[1]} stroke="blue" strokeDasharray={`${baseDashModel},${baseGapModel}`} strokeWidth={2} vectorEffect="non-scaling-stroke" />);
                 elements.push(<circle key="p" cx={inspectRef.current!.point[0]} cy={inspectRef.current!.point[1]} r={markerR} fill="yellow" />);
                 elements.push(<circle key="c1p" cx={c1[0]} cy={c1[1]} r={markerR} fill="blue" />);
                 elements.push(<circle key="c2p" cx={c2[0]} cy={c2[1]} r={markerR} fill="blue" />);
               } else if (type === 'qsplineto') {
                 const [p0, c, p2] = pts as [number[], number[], number[]];
-                elements.push(<line key="c" x1={p0[0]} y1={p0[1]} x2={c[0]} y2={c[1]} stroke="blue" strokeDasharray={`${dashModel},${gapModel}`} strokeWidth={2} vectorEffect="non-scaling-stroke" />);
-                elements.push(<line key="c2" x1={p2[0]} y1={p2[1]} x2={c[0]} y2={c[1]} stroke="blue" strokeDasharray={`${dashModel},${gapModel}`} strokeWidth={2} vectorEffect="non-scaling-stroke" />);
+                elements.push(<line key="c" x1={p0[0]} y1={p0[1]} x2={c[0]} y2={c[1]} stroke="blue" strokeDasharray={`${baseDashModel},${baseGapModel}`} strokeWidth={2} vectorEffect="non-scaling-stroke" />);
+                elements.push(<line key="c2" x1={p2[0]} y1={p2[1]} x2={c[0]} y2={c[1]} stroke="blue" strokeDasharray={`${baseDashModel},${baseGapModel}`} strokeWidth={2} vectorEffect="non-scaling-stroke" />);
                 elements.push(<circle key="p" cx={inspectRef.current!.point[0]} cy={inspectRef.current!.point[1]} r={markerR} fill="yellow" />);
                 elements.push(<circle key="cp" cx={c[0]} cy={c[1]} r={markerR} fill="blue" />);
               } else if (type === 'lineto') {
