@@ -13,6 +13,8 @@ import {
     ALL_MODULES_LIST,
     FILTERED_MODULES_LIST,
     MODULE_FILTER_STRING,
+    MODULE_FILTER_ERRORS_ONLY,
+    MODULE_FILTER_ERRORS_ONLY_TAP,
     MODULE_FILTER_STRING_TAP,
     MODELS_WITH_ERRORS_LIST,
     SELECTED_MODULE_NAME,
@@ -105,13 +107,14 @@ export function createGlobalNavigationDataProviderTap(): Tap {
 // Tap 2a: Filter modules by space-separated substrings and add a preview image
 export function createModuleFilterTap(): Tap {
     type Outs = { filteredModules: typeof FILTERED_MODULES_LIST };
-    type Dest = { allModules: typeof ALL_MODULES_LIST; filter: typeof MODULE_FILTER_STRING };
+    type Dest = { allModules: typeof ALL_MODULES_LIST; filter: typeof MODULE_FILTER_STRING; errorsOnly: typeof MODULE_FILTER_ERRORS_ONLY };
     return createFunctionTap<Outs, any, Dest>({
         provides: [FILTERED_MODULES_LIST],
-        destinationParamGrips: [ALL_MODULES_LIST, MODULE_FILTER_STRING],
+        destinationParamGrips: [ALL_MODULES_LIST, MODULE_FILTER_STRING, MODULE_FILTER_ERRORS_ONLY],
         compute: ({ getDestParam }) => {
             const modules = getDestParam(ALL_MODULES_LIST) as any[] | undefined;
             const rawFilter = getDestParam(MODULE_FILTER_STRING) as unknown as string | undefined;
+            const errorsOnly = getDestParam(MODULE_FILTER_ERRORS_ONLY) as unknown as boolean | undefined;
             const filterStr = (rawFilter || '').toString().trim();
             const updates = new Map<Grip<any>, any>();
             if (!modules) return updates;
@@ -121,6 +124,19 @@ export function createModuleFilterTap(): Tap {
                 : [];
 
             let filtered = modules;
+            if (errorsOnly) {
+                filtered = filtered.filter((m: any) => {
+                    const hasErrors = (m.shape_results || []).some((s: any) =>
+                        (s.example_results || []).some((e: any) => {
+                            const aError = e.error_file_size && e.error_file_size > 0;
+                            const parts = e.parts_model_files || {};
+                            const bError = Object.values(parts).some((p: any) => (p.openscad_exit_status ?? 0) !== 0);
+                            return aError || bError;
+                        })
+                    );
+                    return hasErrors;
+                });
+            }
             if (tokens.length > 0) {
                 filtered = modules.filter((m: any) => {
                     const hay = (m.module_name || '').toLowerCase();
@@ -466,5 +482,6 @@ export const SelectedExampleNameTap = createAtomValueTap(SELECTED_EXAMPLE_NAME, 
 export const SelectedPartNameTap = createAtomValueTap(SELECTED_PART_NAME, { initial: DEFAULT_PART, handleGrip: SELECTED_PART_NAME_TAP });
 export const ActiveTabTap = createAtomValueTap(ACTIVE_TAB, { handleGrip: ACTIVE_TAB_TAP });
 export const ModuleFilterStringTap = createAtomValueTap(MODULE_FILTER_STRING, { handleGrip: MODULE_FILTER_STRING_TAP });
+export const ModuleFilterErrorsOnlyTap = createAtomValueTap(MODULE_FILTER_ERRORS_ONLY, { handleGrip: MODULE_FILTER_ERRORS_ONLY_TAP });
 export const ShowSplashTap = createAtomValueTap(SHOW_SPLASH, { initial: false, handleGrip: SHOW_SPLASH_TAP });
 export const ShowSplashAutoTap = createAtomValueTap(SHOW_SPLASH_AUTO, { initial: true, handleGrip: SHOW_SPLASH_AUTO_TAP });

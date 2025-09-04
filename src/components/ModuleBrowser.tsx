@@ -11,6 +11,8 @@ import {
     SELECTED_SHAPE_NAME_TAP,
     SELECTED_EXAMPLE_NAME_TAP,
     SELECTED_PART_NAME_TAP,
+    MODULE_FILTER_ERRORS_ONLY,
+    MODULE_FILTER_ERRORS_ONLY_TAP,
     DEFAULT_PART,
 } from '../grips';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
@@ -27,6 +29,8 @@ const ModuleList = () => {
     const setExample = useGripSetter(SELECTED_EXAMPLE_NAME_TAP);
     const setPart = useGripSetter(SELECTED_PART_NAME_TAP);
     const setFilter = useGripSetter(MODULE_FILTER_STRING_TAP);
+    const errorsOnly = useGrip(MODULE_FILTER_ERRORS_ONLY);
+    const setErrorsOnly = useGripSetter(MODULE_FILTER_ERRORS_ONLY_TAP);
     const filterValue = useGrip(MODULE_FILTER_STRING);
 
 
@@ -84,6 +88,10 @@ const ModuleList = () => {
                         </button>
                     )}
                 </div>
+                <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" className="accent-blue-500" checked={!!errorsOnly} onChange={(e) => setErrorsOnly(e.target.checked)} />
+                    Show modules with errors only
+                </label>
             </div>
             <ul className="divide-y divide-gray-800">
                 {modules.map((module: any) => (

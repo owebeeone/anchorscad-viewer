@@ -43,6 +43,8 @@ export const MODELS_WITH_ERRORS_LIST = defineGrip<any[] | undefined>('Data.Navig
 export const FILTERED_MODULES_LIST = defineGrip<any[] | undefined>('Data.Navigation.FilteredModules');
 export const MODULE_FILTER_STRING = defineGrip<string>('UI.ModuleFilterString', '');
 export const MODULE_FILTER_STRING_TAP = defineGrip<AtomTapHandle<string>>('UI.ModuleFilterString.Tap');
+export const MODULE_FILTER_ERRORS_ONLY = defineGrip<boolean>('UI.ModuleFilterErrorsOnly', false);
+export const MODULE_FILTER_ERRORS_ONLY_TAP = defineGrip<AtomTapHandle<boolean>>('UI.ModuleFilterErrorsOnly.Tap');
 
 // --- Derived Content Grips (Outputs) ---
 

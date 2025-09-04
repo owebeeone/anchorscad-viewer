@@ -16,6 +16,7 @@ import {
     ShowSplashTap as _ShowSplashTap,
     ShowSplashAutoTap as _ShowSplashAutoTap,
     ModuleFilterStringTap as _ModuleFilterStringTap,
+    ModuleFilterErrorsOnlyTap as _ModuleFilterErrorsOnlyTap,
     SelectedModuleNameTap as _SelectedModuleNameTap,
     SelectedShapeNameTap as _SelectedShapeNameTap,
     SelectedExampleNameTap as _SelectedExampleNameTap,
@@ -35,6 +36,7 @@ grok.registerTap(createSourceCodeLoaderTap());
 // Register all state management taps
 grok.registerTap(_ViewModeTap);
 grok.registerTap(_ModuleFilterStringTap);
+grok.registerTap(_ModuleFilterErrorsOnlyTap);
 grok.registerTap(_SelectedModuleNameTap);
 grok.registerTap(_SelectedShapeNameTap);
 grok.registerTap(_SelectedExampleNameTap);
