@@ -9,6 +9,10 @@ export const DEFAULT_PART = "<main>";
 // --- UI State & Selection Grips (Inputs) ---
 
 export const VIEW_MODE = defineGrip<'modules' | 'errors'>('UI.ViewMode', 'modules');
+export const SHOW_SPLASH = defineGrip<boolean>('UI.ShowSplash', false);
+export const SHOW_SPLASH_TAP = defineGrip<AtomTapHandle<boolean>>('UI.ShowSplash.Tap');
+export const SHOW_SPLASH_AUTO = defineGrip<boolean>('UI.ShowSplashAuto', true);
+export const SHOW_SPLASH_AUTO_TAP = defineGrip<AtomTapHandle<boolean>>('UI.ShowSplashAuto.Tap');
 export const SELECTED_MODULE_NAME = defineGrip<string | undefined>('Selection.ModuleName');
 export const SELECTED_SHAPE_NAME = defineGrip<string | undefined>('Selection.ShapeName');
 export const SELECTED_EXAMPLE_NAME = defineGrip<string | undefined>('Selection.ExampleName');

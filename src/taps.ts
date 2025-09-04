@@ -29,6 +29,10 @@ import {
     CURRENT_STDERR_PATH,
     VIEW_MODE,
     VIEW_MODE_TAP,
+    SHOW_SPLASH,
+    SHOW_SPLASH_TAP,
+    SHOW_SPLASH_AUTO,
+    SHOW_SPLASH_AUTO_TAP,
     SELECTED_MODULE_NAME_TAP,
     SELECTED_SHAPE_NAME_TAP,
     SELECTED_EXAMPLE_NAME_TAP,
@@ -462,3 +466,5 @@ export const SelectedExampleNameTap = createAtomValueTap(SELECTED_EXAMPLE_NAME, 
 export const SelectedPartNameTap = createAtomValueTap(SELECTED_PART_NAME, { initial: DEFAULT_PART, handleGrip: SELECTED_PART_NAME_TAP });
 export const ActiveTabTap = createAtomValueTap(ACTIVE_TAB, { handleGrip: ACTIVE_TAB_TAP });
 export const ModuleFilterStringTap = createAtomValueTap(MODULE_FILTER_STRING, { handleGrip: MODULE_FILTER_STRING_TAP });
+export const ShowSplashTap = createAtomValueTap(SHOW_SPLASH, { initial: false, handleGrip: SHOW_SPLASH_TAP });
+export const ShowSplashAutoTap = createAtomValueTap(SHOW_SPLASH_AUTO, { initial: true, handleGrip: SHOW_SPLASH_AUTO_TAP });

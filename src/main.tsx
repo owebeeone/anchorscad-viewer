@@ -13,6 +13,8 @@ import {
     createSourceCodeLoaderTap,
     createModuleFilterTap,
     ViewModeTap as _ViewModeTap,
+    ShowSplashTap as _ShowSplashTap,
+    ShowSplashAutoTap as _ShowSplashAutoTap,
     ModuleFilterStringTap as _ModuleFilterStringTap,
     SelectedModuleNameTap as _SelectedModuleNameTap,
     SelectedShapeNameTap as _SelectedShapeNameTap,
@@ -38,6 +40,8 @@ grok.registerTap(_SelectedShapeNameTap);
 grok.registerTap(_SelectedExampleNameTap);
 grok.registerTap(_SelectedPartNameTap);
 grok.registerTap(_ActiveTabTap);
+grok.registerTap(_ShowSplashTap);
+grok.registerTap(_ShowSplashAutoTap);
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
