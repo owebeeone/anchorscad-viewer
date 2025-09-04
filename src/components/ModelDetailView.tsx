@@ -17,7 +17,8 @@ import {
     CURRENT_3MF_PATH,
     CURRENT_STDERR_LEN,
     CURRENT_OPENSCAD_STDERR_PATH,
-    CURRENT_OPENSCAD_STDERR_LEN
+    CURRENT_OPENSCAD_STDERR_LEN,
+    PATHS_VIEW_DATA
 } from '../grips';
 import ThreeDViewer from './a_ui/ThreeDViewer';
 import PngViewer from './a_ui/PngViewer';
@@ -26,6 +27,7 @@ import CodeViewer from './a_ui/CodeViewer';
 import SourceCodeViewer from './a_ui/SourceCodeViewer';
 import ErrorLogViewer from './a_ui/ErrorLogViewer';
 import ThreeMFViewer from './a_ui/ThreeMFViewer';
+import SvgPathsViewer from './a_ui/SvgPathsViewer';
 
 const PartSelector = () => {
     const parts = useGrip(CURRENT_MODEL_PARTS);
@@ -78,6 +80,7 @@ export default function ModelDetailView() {
     const setActiveTab = useGripSetter(ACTIVE_TAB_TAP);
     const openscadErrPath = useGrip(CURRENT_OPENSCAD_STDERR_PATH);
     const openscadErrLen = useGrip(CURRENT_OPENSCAD_STDERR_LEN);
+    const pathsDoc = useGrip(PATHS_VIEW_DATA);
 
     // Debug logging
     console.log('ModelDetailView paths:', {
@@ -106,6 +109,7 @@ export default function ModelDetailView() {
         { name: 'STL' as const, tab_title: '3D (stl)', path: stlPath },
         { name: '3MF' as const, tab_title: '3D (3mf)', path: threeMfPath },
         { name: 'Graph' as const, tab_title: 'Graph', path: svgPath },
+        { name: 'Paths' as const, tab_title: 'Paths', path: pathsDoc ? 'available' : undefined },
         { name: 'Code' as const, tab_title: 'Code', path: sourceLink },
         { name: 'Scad' as const, tab_title: 'Scad Code', path: scadPath },
         { name: 'Error' as const, tab_title: 'Error', path: stderrLen ? stderrPath : undefined },
@@ -118,6 +122,7 @@ export default function ModelDetailView() {
             case 'STL': return stlPath ? <ThreeDViewer stlPath={stlPath} pngPath={pngPath} /> : <div className="flex items-center justify-center h-full text-gray-500">Loading 3D model...</div>;
             case '3MF': return threeMfPath ? <ThreeMFViewer threeMfPath={threeMfPath} pngPath={pngPath} /> : <div className="flex items-center justify-center h-full text-gray-500">Loading 3D model...</div>;
             case 'Graph': return svgPath ? <SvgViewer svgPath={svgPath} /> : <div className="flex items-center justify-center h-full text-gray-500">Loading graph...</div>;
+            case 'Paths': return <SvgPathsViewer />;
             case 'Code': return sourceLink ? <SourceCodeViewer /> : <div className="flex items-center justify-center h-full text-gray-500">Loading code...</div>;
             case 'Scad': return scadPath ? <CodeViewer /> : <div className="flex items-center justify-center h-full text-gray-500">Loading code...</div>;
             case 'Error': return stderrPath ? <ErrorLogViewer stderrPath={stderrPath} /> : <div className="flex items-center justify-center h-full text-gray-500">No error log available</div>;

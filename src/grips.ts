@@ -26,7 +26,7 @@ export const SELECTED_EXAMPLE_NAME_TAP = defineGrip<AtomTapHandle<string | undef
 export const SELECTED_PART_NAME_TAP = defineGrip<AtomTapHandle<string | undefined>>('Selection.PartName.Tap');
 
 // --- UI State Grips ---
-export type ViewerTab = 'PNG' | 'STL' | '3MF' | 'Graph' | 'Code' | 'Scad' | 'Error' | 'OpenSCAD Error';
+export type ViewerTab = 'PNG' | 'STL' | '3MF' | 'Graph' | 'Paths' | 'Code' | 'Scad' | 'Error' | 'OpenSCAD Error';
 export const ACTIVE_TAB = defineGrip<ViewerTab>('UI.ActiveTab', 'PNG');
 export const ACTIVE_TAB_TAP = defineGrip<AtomTapHandle<ViewerTab>>('UI.ActiveTab.Tap');
 
@@ -70,3 +70,29 @@ export const CURRENT_SOURCE_CODE_TEXT = defineGrip<string | undefined>('Model.So
 export const CURRENT_SOURCE_GITHUB_URL = defineGrip<string | undefined>('Model.SourceGithubUrl');
 export const CURRENT_SOURCE_RAW_URL = defineGrip<string | undefined>('Model.SourceRawUrl');
 export const CURRENT_SOURCE_LINE_NUMBER = defineGrip<number | undefined>('Model.SourceLineNumber');
+
+// --- Paths (interactive SVG) Grips ---
+export const CURRENT_PATHS_HTML_PATH = defineGrip<string | undefined>('Model.PathsHtmlPath');
+export const CURRENT_PATHS_JSON_PATH = defineGrip<string | undefined>('Model.PathsJsonPath');
+export const PATHS_VIEW_DATA = defineGrip<any | undefined>('Model.PathsViewData');
+
+export const PATHS_SELECTED_PATH_ID = defineGrip<string | undefined>('UI.Paths.SelectedPathId');
+export const PATHS_SELECTED_PATH_ID_TAP = defineGrip<AtomTapHandle<string | undefined>>('UI.Paths.SelectedPathId.Tap');
+export const PATHS_SELECTED_SEGMENT_IDS = defineGrip<string[]>('UI.Paths.SelectedSegmentIds', []);
+export const PATHS_SELECTED_SEGMENT_IDS_TAP = defineGrip<AtomTapHandle<string[]>>('UI.Paths.SelectedSegmentIds.Tap');
+export const PATHS_HOVER_SEGMENT_ID = defineGrip<string | undefined>('UI.Paths.HoverSegmentId');
+export const PATHS_HOVER_SEGMENT_ID_TAP = defineGrip<AtomTapHandle<string | undefined>>('UI.Paths.HoverSegmentId.Tap');
+export const PATHS_SHOW_CONSTRUCTION = defineGrip<boolean>('UI.Paths.ShowConstruction', true);
+export const PATHS_SHOW_CONSTRUCTION_TAP = defineGrip<AtomTapHandle<boolean>>('UI.Paths.ShowConstruction.Tap');
+
+export const PATHS_SELECTED_SOURCE_GITHUB_URL = defineGrip<string | undefined>('UI.Paths.SelectedSourceGithubUrl');
+export const PATHS_SELECTED_SOURCE_LINE = defineGrip<number | undefined>('UI.Paths.SelectedSourceLine');
+
+// Viewport (zoom/pan) state for Paths viewer
+export type PathsViewBox = { x: number; y: number; w: number; h: number } | undefined;
+export const PATHS_VIEWBOX = defineGrip<PathsViewBox>('UI.Paths.ViewBox');
+export const PATHS_VIEWBOX_TAP = defineGrip<AtomTapHandle<PathsViewBox>>('UI.Paths.ViewBox.Tap');
+
+// Selection inspect info (for UI panel and overlay)
+export const PATHS_INSPECT = defineGrip<any | undefined>('UI.Paths.Inspect');
+export const PATHS_INSPECT_TAP = defineGrip<AtomTapHandle<any | undefined>>('UI.Paths.Inspect.Tap');

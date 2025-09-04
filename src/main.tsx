@@ -11,6 +11,8 @@ import {
     createModelResourceProviderTap,
     createCodeTextLoaderTap,
     createSourceCodeLoaderTap,
+    createPathsPathResolverTap,
+    createPathsDocumentLoaderTap,
     createModuleFilterTap,
     ViewModeTap as _ViewModeTap,
     ShowSplashTap as _ShowSplashTap,
@@ -21,7 +23,13 @@ import {
     SelectedShapeNameTap as _SelectedShapeNameTap,
     SelectedExampleNameTap as _SelectedExampleNameTap,
     SelectedPartNameTap as _SelectedPartNameTap,
-    ActiveTabTap as _ActiveTabTap
+    ActiveTabTap as _ActiveTabTap,
+    PathsSelectedPathIdTap as _PathsSelectedPathIdTap,
+    PathsSelectedSegmentIdsTap as _PathsSelectedSegmentIdsTap,
+    PathsHoverSegmentIdTap as _PathsHoverSegmentIdTap,
+    PathsShowConstructionTap as _PathsShowConstructionTap,
+    PathsViewBoxTap as _PathsViewBoxTap,
+    PathsInspectTap as _PathsInspectTap
 } from './taps.ts'
 
 // Register all data provider taps with the GROK engine
@@ -32,6 +40,8 @@ grok.registerTap(createModuleSpecificNavigationTap());
 grok.registerTap(createModelResourceProviderTap());
 grok.registerTap(createCodeTextLoaderTap());
 grok.registerTap(createSourceCodeLoaderTap());
+grok.registerTap(createPathsPathResolverTap());
+grok.registerTap(createPathsDocumentLoaderTap());
 
 // Register all state management taps
 grok.registerTap(_ViewModeTap);
@@ -42,6 +52,12 @@ grok.registerTap(_SelectedShapeNameTap);
 grok.registerTap(_SelectedExampleNameTap);
 grok.registerTap(_SelectedPartNameTap);
 grok.registerTap(_ActiveTabTap);
+grok.registerTap(_PathsSelectedPathIdTap);
+grok.registerTap(_PathsSelectedSegmentIdsTap);
+grok.registerTap(_PathsHoverSegmentIdTap);
+grok.registerTap(_PathsShowConstructionTap);
+grok.registerTap(_PathsViewBoxTap);
+grok.registerTap(_PathsInspectTap);
 grok.registerTap(_ShowSplashTap);
 grok.registerTap(_ShowSplashAutoTap);
 

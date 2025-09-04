@@ -50,7 +50,24 @@ import {
     CURRENT_3MF_PATH,
     CURRENT_STDERR_LEN,
     CURRENT_OPENSCAD_STDERR_PATH,
-    CURRENT_OPENSCAD_STDERR_LEN
+    CURRENT_OPENSCAD_STDERR_LEN,
+    CURRENT_PATHS_HTML_PATH,
+    CURRENT_PATHS_JSON_PATH,
+    PATHS_VIEW_DATA,
+    PATHS_SELECTED_PATH_ID,
+    PATHS_SELECTED_PATH_ID_TAP,
+    PATHS_SELECTED_SEGMENT_IDS,
+    PATHS_SELECTED_SEGMENT_IDS_TAP,
+    PATHS_HOVER_SEGMENT_ID,
+    PATHS_HOVER_SEGMENT_ID_TAP,
+    PATHS_SHOW_CONSTRUCTION,
+    PATHS_SHOW_CONSTRUCTION_TAP,
+    PATHS_SELECTED_SOURCE_GITHUB_URL,
+    PATHS_SELECTED_SOURCE_LINE,
+    PATHS_VIEWBOX,
+    PATHS_VIEWBOX_TAP,
+    PATHS_INSPECT,
+    PATHS_INSPECT_TAP
 } from './grips';
 
 // Tap 1: Fetches the status.json file once and caches it.
@@ -472,6 +489,105 @@ export function createSourceCodeLoaderTap(): Tap {
         }
     });
 }
+
+// --- Paths (interactive SVG) ---
+
+// Resolve .paths.html (Phase 1) and optional .paths.json (Phase 2)
+export function createPathsPathResolverTap(): Tap {
+    type Outs = { pathsHtml: typeof CURRENT_PATHS_HTML_PATH; pathsJson: typeof CURRENT_PATHS_JSON_PATH };
+    type Dest = { png: typeof CURRENT_PNG_PATH; scad: typeof CURRENT_SCAD_PATH };
+    return createFunctionTap<Outs, any, Dest>({
+        provides: [CURRENT_PATHS_HTML_PATH, CURRENT_PATHS_JSON_PATH],
+        destinationParamGrips: [CURRENT_PNG_PATH, CURRENT_SCAD_PATH],
+        compute: ({ getDestParam }) => {
+            const updates = new Map<Grip<any>, any>();
+            const pngPath = getDestParam(CURRENT_PNG_PATH) as string | undefined;
+
+            // Heuristics: assume .paths.html is alongside PNG with suffix replacement
+            // example: foo_default_example.png -> foo_default_example.paths.html
+            const derive = (p?: string) => p?.replace(/\.png$/i, '.paths.html');
+            const htmlFromPng = derive(pngPath);
+            if (htmlFromPng) updates.set(CURRENT_PATHS_HTML_PATH, htmlFromPng);
+
+            // Placeholder for phase 2 JSON path (same base with .paths.json)
+            const jsonFromPng = pngPath?.replace(/\.png$/i, '.paths.json');
+            if (jsonFromPng) updates.set(CURRENT_PATHS_JSON_PATH, jsonFromPng);
+
+            return updates;
+        }
+    });
+}
+
+// Load and normalize paths document; prefer JSON, fallback to HTML parsing
+export function createPathsDocumentLoaderTap(): Tap {
+    return createAsyncMultiTap<{ view: typeof PATHS_VIEW_DATA }, any>({
+        provides: [PATHS_VIEW_DATA],
+        homeParamGrips: [RAW_STATUS_JSON],
+        destinationParamGrips: [CURRENT_PATHS_JSON_PATH, CURRENT_PATHS_HTML_PATH],
+        cacheTtlMs: 5 * 60 * 1000,
+        requestKeyOf: (params) => {
+            return params.getDestParam(CURRENT_PATHS_JSON_PATH) || params.getDestParam(CURRENT_PATHS_HTML_PATH) || undefined;
+        },
+        fetcher: async (params, signal) => {
+            const jsonPath = params.getDestParam(CURRENT_PATHS_JSON_PATH) as string | undefined;
+            const htmlPath = params.getDestParam(CURRENT_PATHS_HTML_PATH) as string | undefined;
+
+            // Try JSON first
+            if (jsonPath) {
+                try {
+                    const url = `/${jsonPath}`;
+                    const res = await fetch(url, { signal });
+                    if (res.ok) {
+                        const doc = await res.json();
+                        return { kind: 'json', doc };
+                    }
+                } catch {}
+            }
+
+            if (htmlPath) {
+                try {
+                    const url = `/${htmlPath}`;
+                    const res = await fetch(url, { signal });
+                    if (!res.ok) return null;
+                    const html = await res.text();
+                    // Extract inline objects image_metadata and segment_metadata via simple regex
+                    const imgMatch = html.match(/let\s+image_metadata\s*=\s*(\{[\s\S]*?\});/);
+                    const segMatch = html.match(/let\s+segment_metadata\s*=\s*(\{[\s\S]*?\});/);
+                    const transformMatch = html.match(/<g\s+transform=\"matrix\(([^\)]*)\)\"/);
+                    const viewBoxMatch = html.match(/<svg\s+[^>]*width=\"([0-9\.]+)\"\s+height=\"([0-9\.]+)\"/);
+
+                    const imageMeta = imgMatch ? JSON.parse(imgMatch[1]) : undefined;
+                    const segmentMeta = segMatch ? JSON.parse(segMatch[1]) : undefined;
+                    const width = viewBoxMatch ? parseFloat(viewBoxMatch[1]) : undefined;
+                    const height = viewBoxMatch ? parseFloat(viewBoxMatch[2]) : undefined;
+                    const matrix = transformMatch ? transformMatch[1].split(',').map((n: string) => parseFloat(n.trim())) : undefined;
+
+                    if (!imageMeta || !segmentMeta) return null;
+
+                    // Normalize into a minimal structure the viewer can use immediately
+                    const view = { width, height, matrix, imageMeta, segmentMeta, htmlPath };
+                    return { kind: 'html', doc: view } as any;
+                } catch {}
+            }
+            return null;
+        },
+        mapResult: (_params, result: any) => {
+            const updates = new Map<Grip<any>, any>();
+            if (!result) return updates;
+            // For now, pass-through the normalized minimal doc
+            updates.set(PATHS_VIEW_DATA, result.doc);
+            return updates;
+        }
+    });
+}
+
+// Atom taps for paths UI state
+export const PathsSelectedPathIdTap = createAtomValueTap(PATHS_SELECTED_PATH_ID, { handleGrip: PATHS_SELECTED_PATH_ID_TAP });
+export const PathsSelectedSegmentIdsTap = createAtomValueTap(PATHS_SELECTED_SEGMENT_IDS, { handleGrip: PATHS_SELECTED_SEGMENT_IDS_TAP });
+export const PathsHoverSegmentIdTap = createAtomValueTap(PATHS_HOVER_SEGMENT_ID, { handleGrip: PATHS_HOVER_SEGMENT_ID_TAP });
+export const PathsShowConstructionTap = createAtomValueTap(PATHS_SHOW_CONSTRUCTION, { initial: true, handleGrip: PATHS_SHOW_CONSTRUCTION_TAP });
+export const PathsViewBoxTap = createAtomValueTap(PATHS_VIEWBOX, { handleGrip: PATHS_VIEWBOX_TAP });
+export const PathsInspectTap = createAtomValueTap(PATHS_INSPECT, { handleGrip: PATHS_INSPECT_TAP });
 
 // --- Atom Taps for UI State ---
 
