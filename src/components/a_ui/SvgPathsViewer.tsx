@@ -3,6 +3,7 @@ import { useMemo, useCallback, useRef, useEffect } from 'react';
 // @ts-expect-error external package types resolution via exports may fail in Vite; dts exists in dist
 import { CubicSpline, QuadraticSpline } from 'bezier-spline-eval';
 import { getArcExtentsFromStartPoint } from '../../arc';
+import { computeGraduations, computeLabels } from '../../graduations';
 import { useGrip, useGripSetter } from '@owebeeone/grip-react';
 import {
   PATHS_VIEW_DATA,
@@ -42,6 +43,9 @@ export default function SvgPathsViewer() {
     const [a, b, c, d, e, f] = matrix;
     return { x: a * x + c * y + e, y: b * x + d * y + f } as const;
   }, [matrix]);
+
+  // Inverse transform from post-transform (viewBox space) to model space
+  // (no inverse helper needed now)
 
   // Geometry helpers (defined early to avoid TDZ when used in hooks)
   // geometry helper decls moved earlier; remove duplicates
@@ -171,35 +175,45 @@ export default function SvgPathsViewer() {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const groupRef = useRef<SVGGElement | null>(null);
 
-  // Grid helpers based on current viewBox to keep density reasonable
+  // Grid helpers based on current viewBox and transform; keep density in pixel bounds
   const vbGrip = useGrip(PATHS_VIEWBOX);
   const grid = useMemo(() => {
     const vbLocal = (vbGrip || { x: 0, y: 0, w: width, h: height });
-    const vminX = vbLocal.x, vmaxX = vbLocal.x + vbLocal.w;
-    const vminY = vbLocal.y, vmaxY = vbLocal.y + vbLocal.h;
     const svgW = svgRef.current?.clientWidth || 600;
     const svgH = svgRef.current?.clientHeight || 600;
-    const pxPerModel = ((svgW / (vbLocal.w || 1)) + (svgH / (vbLocal.h || 1))) / 2;
-    const targetPx = 80; // desired spacing in pixels for major grid
-    const raw = Math.max(1e-9, targetPx / (pxPerModel || 1));
-    const pow10 = Math.pow(10, Math.floor(Math.log10(raw)));
-    const candidates = [1, 2, 5].map(n => n * pow10);
-    const step = candidates.find(n => n >= raw) || candidates[candidates.length - 1];
-    const minor = step / 5;
-    function range(from: number, to: number, by: number) {
-      const start = Math.ceil(from / by) * by;
-      const out: number[] = [];
-      for (let v = start; v <= to; v += by) out.push(+v.toFixed(10));
-      return out;
-    }
+    const res = computeGraduations({
+      bounds: { minX: bounds.minX, minY: bounds.minY, maxX: bounds.maxX, maxY: bounds.maxY },
+      viewBox: vbLocal,
+      svgWidth: svgW,
+      svgHeight: svgH,
+      matrix: (matrix as any) || undefined,
+    });
     return {
-      step, minor,
-      minorXs: range(vminX, vmaxX, minor),
-      minorYs: range(vminY, vmaxY, minor),
-      majorXs: range(vminX, vmaxX, step),
-      majorYs: range(vminY, vmaxY, step)
+      step: res.stepModel,
+      minor: res.minorStepModel,
+      minorXs: res.minorXs,
+      minorYs: res.minorYs,
+      majorXs: res.majorXs,
+      majorYs: res.majorYs,
     };
-  }, [vbGrip, width, height]);
+  }, [vbGrip, width, height, matrix, bounds.minX, bounds.minY, bounds.maxX, bounds.maxY]);
+
+  const labels = useMemo(() => {
+    const vbLocal = (vbGrip || { x: 0, y: 0, w: width, h: height });
+    const svgW = svgRef.current?.clientWidth || 600;
+    const svgH = svgRef.current?.clientHeight || 600;
+    const res = computeLabels({
+      majors: { xs: grid.majorXs, ys: grid.majorYs },
+      viewBox: vbLocal,
+      svgWidth: svgW,
+      svgHeight: svgH,
+      matrix: (matrix as any) || undefined,
+      minLabelPx: 24,
+      stepHint: grid.step,
+      fontPx: 16,
+    });
+    return res;
+  }, [grid.majorXs, grid.majorYs, vbGrip, width, height, matrix]);
 
   
 
@@ -533,43 +547,42 @@ export default function SvgPathsViewer() {
             {/* Debug: transformed bounds box */}
             <rect x={bounds.minX} y={bounds.minY} width={bounds.maxX - bounds.minX} height={bounds.maxY - bounds.minY} fill="none" stroke="#e53935" strokeWidth={1} vectorEffect="non-scaling-stroke" />
 
-            {/* In-SVG axis labels near bounds with inverse scaling for constant screen size */}
+            {/* In-SVG axis labels using decimated labels with constant screen size */}
             {(() => {
               const svgW = svgRef.current?.clientWidth || 600;
               const svgH = svgRef.current?.clientHeight || 600;
               const sxView = svgW / (vb.w || 1);
               const syView = svgH / (vb.h || 1);
               const [a, b, c, d] = matrix || [1, 0, 0, 1];
-              const gScaleX = Math.hypot(a || 1, b || 0);
-              const gScaleY = Math.hypot(c || 0, d || 1);
-              const pxPerModel = ((sxView * gScaleX) + (syView * gScaleY)) / 2;
-              const fontPx = 16;
+              // Total screen scaling = viewBox scaling * group scaling
+              const scaleX = sxView * Math.hypot(a || 1, b || 0);
+              const scaleY = syView * Math.hypot(c || 0, d || 1);
+              const invScaleX = 1 / (scaleX || 1);
+              const invScaleY = -1 / (scaleY || 1); // keep text upright
+              // Offset in model units so that offset in px is constant
               const offsetPx = 10;
-              const invScaleX = 1 / (gScaleX || 1);
-              const invScaleY = -1 / (gScaleY || 1); // flip Y upright
+              const pxPerModel = (scaleX + scaleY) / 2;
               const offsetModel = offsetPx / (pxPerModel || 1);
+              const fontPx = 16; // constant CSS px independent of zoom
+              const fmt = (v: number) => (+v.toFixed(3)).toString();
               return (
                 <>
-                  {grid.majorXs.map((x) => (
-                    <g key={`lbl-x-b-${x}`} transform={`translate(${x}, ${bounds.maxY + offsetModel}) scale(${invScaleX}, ${invScaleY})`}>
-                      <text fontSize={fontPx} textAnchor="middle" fill="#101010">{x}</text>
+                  {labels.x.map((l) => (
+                    <g key={`lbl-x-b-${l.model}`} transform={`translate(${l.model}, ${bounds.maxY + offsetModel}) scale(${invScaleX}, ${invScaleY})`}>
+                      <text fontSize={fontPx} textAnchor="middle" fill="#101010">{fmt(l.value)}</text>
                     </g>
                   ))}
-                  {grid.majorXs.map((x) => (
-                    <g key={`lbl-x-t-${x}`} transform={`translate(${x}, ${bounds.minY - offsetModel}) scale(${invScaleX}, ${invScaleY})`}>
-                      <text fontSize={fontPx} textAnchor="middle" fill="#101010">{x}</text>
+                  {labels.x.map((l) => (
+                    <g key={`lbl-x-t-${l.model}`} transform={`translate(${l.model}, ${bounds.minY - offsetModel}) scale(${invScaleX}, ${invScaleY})`}>
+                      <text fontSize={fontPx} textAnchor="middle" fill="#101010">{fmt(l.value)}</text>
                     </g>
                   ))}
-                  {grid.majorYs.map((y) => (
-                    <g key={`lbl-y-l-${y}`} transform={`translate(${bounds.minX - offsetModel}, ${y}) scale(${invScaleX}, ${invScaleY})`}>
-                      <text fontSize={fontPx} textAnchor="end" alignmentBaseline="middle" fill="#101010">{y}</text>
+                  {labels.y.map((l) => (
+                    <g key={`lbl-y-l-${l.model}`} transform={`translate(${bounds.minX - offsetModel}, ${l.model}) scale(${invScaleX}, ${invScaleY})`}>
+                      <text fontSize={fontPx} textAnchor="end" alignmentBaseline="middle" fill="#101010">{fmt(l.value)}</text>
                     </g>
                   ))}
-                  {grid.majorYs.map((y) => (
-                    <g key={`lbl-y-r-${y}`} transform={`translate(${bounds.maxX + offsetModel}, ${y}) scale(${invScaleX}, ${invScaleY})`}>
-                      <text fontSize={fontPx} textAnchor="start" alignmentBaseline="middle" fill="#101010">{y}</text>
-                    </g>
-                  ))}
+                  {/* Mirror on right disabled to reduce overcrowding */}
                 </>
               );
             })()}
