@@ -34,56 +34,67 @@ export default function SourceCodeViewer() {
   }, [highlightLine, code]);
 
   return (
-    <div className="h-full w-full relative">
-      <div className="h-full overflow-auto">
-        {canHighlight ? (
-          <SyntaxHighlighter
-            language="python"
-            style={dracula}
-            customStyle={{ margin: 0, height: '100%' }}
-            showLineNumbers
-            wrapLines
-            lineNumberStyle={{ opacity: 0.8 }}
-            lineProps={(line) => {
-              const isTarget = highlightLine === line;
-              return {
-                id: `source-line-${line}`,
-                style: isTarget
-                  ? { backgroundColor: 'rgba(255, 255, 0, 0.16)' }
-                  : undefined,
-              } as any;
-            }}
-          >
-            {code}
-          </SyntaxHighlighter>
+    <div className="h-full w-full flex flex-col">
+      <div className="flex-shrink-0 flex items-center gap-3 px-3 py-2 bg-gray-800 border-b border-gray-700 text-sm">
+        {githubUrl ? (
+          <a href={githubUrl} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 underline">
+            {`View on GitHub${lineNumber ? ` (line ${lineNumber})` : ''}`}
+          </a>
         ) : (
-          <pre className="m-0 p-2 text-gray-200 whitespace-pre-wrap">
-            {code ?? '// Loading...'}
-          </pre>
+          <span className="text-gray-400">Source link unavailable</span>
         )}
       </div>
-      <button
-        onClick={() => {
-          try {
-            const blob = new Blob([code ?? ''], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const base = (rawUrl?.split('/')?.pop() || 'source.py').replace(/\/+$/, '');
-            a.download = base || 'source.py';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          } catch (e) {
-            console.error('Failed to save source code:', e);
-          }
-        }}
-        className="absolute bottom-2 left-2 z-10 bg-gray-800/80 text-white text-xs px-2 py-1 rounded shadow hover:bg-gray-700"
-        title="Save source"
-      >
-        Save
-      </button>
+      <div className="flex-grow min-h-0 relative">
+        <div className="h-full overflow-auto">
+          {canHighlight ? (
+            <SyntaxHighlighter
+              language="python"
+              style={dracula}
+              customStyle={{ margin: 0, height: '100%' }}
+              showLineNumbers
+              wrapLines
+              lineNumberStyle={{ opacity: 0.8 }}
+              lineProps={(line) => {
+                const isTarget = highlightLine === line;
+                return {
+                  id: `source-line-${line}`,
+                  style: isTarget
+                    ? { backgroundColor: 'rgba(255, 255, 0, 0.16)' }
+                    : undefined,
+                } as any;
+              }}
+            >
+              {code}
+            </SyntaxHighlighter>
+          ) : (
+            <pre className="m-0 p-2 text-gray-200 whitespace-pre-wrap">
+              {code ?? '// Loading...'}
+            </pre>
+          )}
+        </div>
+        <button
+          onClick={() => {
+            try {
+              const blob = new Blob([code ?? ''], { type: 'text/plain;charset=utf-8' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              const base = (rawUrl?.split('/')?.pop() || 'source.py').replace(/\/+$/, '');
+              a.download = base || 'source.py';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            } catch (e) {
+              console.error('Failed to save source code:', e);
+            }
+          }}
+          className="absolute bottom-2 left-2 z-10 bg-gray-800/80 text-white text-xs px-2 py-1 rounded shadow hover:bg-gray-700"
+          title="Save source"
+        >
+          Save
+        </button>
+      </div>
     </div>
   );
 }
