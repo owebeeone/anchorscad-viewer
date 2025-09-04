@@ -15,7 +15,9 @@ import {
     DEFAULT_PART,
     CURRENT_SOURCE_GITHUB_URL,
     CURRENT_3MF_PATH,
-    CURRENT_STDERR_LEN
+    CURRENT_STDERR_LEN,
+    CURRENT_OPENSCAD_STDERR_PATH,
+    CURRENT_OPENSCAD_STDERR_LEN
 } from '../grips';
 import ThreeDViewer from './a_ui/ThreeDViewer';
 import PngViewer from './a_ui/PngViewer';
@@ -74,6 +76,8 @@ export default function ModelDetailView() {
     const selectedPart = useGrip(SELECTED_PART_NAME);
     const activeTab = useGrip(ACTIVE_TAB);
     const setActiveTab = useGripSetter(ACTIVE_TAB_TAP);
+    const openscadErrPath = useGrip(CURRENT_OPENSCAD_STDERR_PATH);
+    const openscadErrLen = useGrip(CURRENT_OPENSCAD_STDERR_LEN);
 
     // Debug logging
     console.log('ModelDetailView paths:', {
@@ -105,6 +109,7 @@ export default function ModelDetailView() {
         { name: 'Code' as const, tab_title: 'Code', path: sourceLink },
         { name: 'Scad' as const, tab_title: 'Scad Code', path: scadPath },
         { name: 'Error' as const, tab_title: 'Error', path: stderrLen ? stderrPath : undefined },
+        { name: 'OpenSCAD Error' as const, tab_title: 'OpenSCAD Error', path: openscadErrLen ? openscadErrPath : undefined },
     ].filter(tab => tab.path);
 
     const renderActiveTab = () => {
@@ -116,6 +121,7 @@ export default function ModelDetailView() {
             case 'Code': return sourceLink ? <SourceCodeViewer /> : <div className="flex items-center justify-center h-full text-gray-500">Loading code...</div>;
             case 'Scad': return scadPath ? <CodeViewer /> : <div className="flex items-center justify-center h-full text-gray-500">Loading code...</div>;
             case 'Error': return stderrPath ? <ErrorLogViewer stderrPath={stderrPath} /> : <div className="flex items-center justify-center h-full text-gray-500">No error log available</div>;
+            case 'OpenSCAD Error': return openscadErrPath ? <ErrorLogViewer stderrPath={openscadErrPath} /> : <div className="flex items-center justify-center h-full text-gray-500">No OpenSCAD error log</div>;
             default: return null;
         }
     }

@@ -3,7 +3,8 @@ import { useGrip } from '@owebeeone/grip-react';
 import { 
   CURRENT_SOURCE_CODE_TEXT,
   CURRENT_SOURCE_GITHUB_URL,
-  CURRENT_SOURCE_LINE_NUMBER
+  CURRENT_SOURCE_LINE_NUMBER,
+  CURRENT_SOURCE_RAW_URL
 } from '../../grips';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -12,6 +13,7 @@ export default function SourceCodeViewer() {
   const code = useGrip(CURRENT_SOURCE_CODE_TEXT);
   const githubUrl = useGrip(CURRENT_SOURCE_GITHUB_URL);
   const lineNumber = useGrip(CURRENT_SOURCE_LINE_NUMBER);
+  const rawUrl = useGrip(CURRENT_SOURCE_RAW_URL);
   const MAX_HILITE = 30_000; // ~300KB threshold for highlighting
   const canHighlight = typeof code === 'string' && code.length > 0 && code.length <= MAX_HILITE;
 
@@ -67,7 +69,8 @@ export default function SourceCodeViewer() {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'source.py';
+            const base = (rawUrl?.split('/')?.pop() || 'source.py').replace(/\/+$/, '');
+            a.download = base || 'source.py';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

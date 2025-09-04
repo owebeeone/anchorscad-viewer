@@ -1,4 +1,5 @@
 import { useGrip } from '@owebeeone/grip-react';
+import { CURRENT_SCAD_PATH } from '../../grips';
 import { CURRENT_CODE_TEXT } from '../../grips';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -6,6 +7,7 @@ import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 // Displays OpenSCAD code
 export default function CodeViewer() {
   const code = useGrip(CURRENT_CODE_TEXT);
+  const scadPath = useGrip(CURRENT_SCAD_PATH);
   const MAX_HILITE = 30_000; // ~300KB threshold for highlighting
   const canHighlight = typeof code === 'string' && code.length > 0 && code.length <= MAX_HILITE;
 
@@ -29,7 +31,8 @@ export default function CodeViewer() {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'model.scad';
+            const base = (scadPath?.split('/')?.pop() || 'model.scad').replace(/\/+$/, '');
+            a.download = /\.scad$/i.test(base) ? base : `${base}.scad`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

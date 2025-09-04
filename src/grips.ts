@@ -22,7 +22,7 @@ export const SELECTED_EXAMPLE_NAME_TAP = defineGrip<AtomTapHandle<string | undef
 export const SELECTED_PART_NAME_TAP = defineGrip<AtomTapHandle<string | undefined>>('Selection.PartName.Tap');
 
 // --- UI State Grips ---
-export type ViewerTab = 'PNG' | 'STL' | '3MF' | 'Graph' | 'Code' | 'Scad' | 'Error';
+export type ViewerTab = 'PNG' | 'STL' | '3MF' | 'Graph' | 'Code' | 'Scad' | 'Error' | 'OpenSCAD Error';
 export const ACTIVE_TAB = defineGrip<ViewerTab>('UI.ActiveTab', 'PNG');
 export const ACTIVE_TAB_TAP = defineGrip<AtomTapHandle<ViewerTab>>('UI.ActiveTab.Tap');
 
@@ -51,6 +51,10 @@ export const CURRENT_SCAD_PATH = defineGrip<string | undefined>('Model.ScadPath'
 export const CURRENT_GRAPH_SVG_PATH = defineGrip<string | undefined>('Model.GraphSvgPath');
 export const CURRENT_STDERR_PATH = defineGrip<string | undefined>('Model.StderrPath');
 export const CURRENT_STDERR_LEN = defineGrip<number | undefined>('Model.error_file_size');
+
+// OpenSCAD error output (separate from runtime stderr)
+export const CURRENT_OPENSCAD_STDERR_PATH = defineGrip<string | undefined>('Model.OpenSCADStderrPath');
+export const CURRENT_OPENSCAD_STDERR_LEN = defineGrip<number | undefined>('Model.openscad_err_file_size');
 
 export const CURRENT_CODE_TEXT = defineGrip<string | undefined>('Model.CodeText');
 export const CURRENT_CODE_TEXT_TAP = defineGrip<AtomTapHandle<string | undefined>>('Model.CodeText.Tap');

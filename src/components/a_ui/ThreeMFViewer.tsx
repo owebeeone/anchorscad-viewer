@@ -1,7 +1,7 @@
 
 import { Canvas, useLoader, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { Stage, OrbitControls, GizmoHelper, GizmoViewport } from '@react-three/drei';
+import { Stage, ArcballControls, GizmoHelper, GizmoViewport } from '@react-three/drei';
 import { ThreeMFLoader } from 'three-stdlib';
 import { Suspense, useEffect, useRef } from 'react';
 
@@ -127,7 +127,7 @@ export default function ThreeMFViewer({ threeMfPath, pngPath }: { threeMfPath: s
         try {
             const a = document.createElement('a');
             a.href = threeMfPath;
-            const name = threeMfPath.split('/').pop() || 'model.3mf';
+            const name = (threeMfPath.split('/').pop() || 'model.3mf').replace(/\/+$/, '');
             a.download = /\.(3mf|f3mf)$/i.test(name) ? name : `${name}.3mf`;
             document.body.appendChild(a);
             a.click();
@@ -149,8 +149,8 @@ export default function ThreeMFViewer({ threeMfPath, pngPath }: { threeMfPath: s
                 camera={{ position: [2, 2, 2], fov: 50 }}
             >
                 <ambientLight intensity={1.0} color={0xffffff} />
-                <directionalLight position={[10, 10, 5]} intensity={0.4} color={0xffffff} />
-                <directionalLight position={[10, -10, 5]} intensity={0.4} color={0xffffff} />
+                <directionalLight position={[10, 10, 5]} intensity={1.4} color={0xffff00} />
+                <directionalLight position={[10, -10, 5]} intensity={1.9} color={0xffffff} />
 
                 <Stage environment={null as any} intensity={1.0} shadows={{ type: 'contact', opacity: 0.2, blur: 2 }}>
                     <group ref={modelGroupRef as any} key={threeMfPath}>
@@ -159,7 +159,7 @@ export default function ThreeMFViewer({ threeMfPath, pngPath }: { threeMfPath: s
                         </Suspense>
                     </group>
                 </Stage>
-                <OrbitControls makeDefault autoRotate={false} />
+                <ArcballControls makeDefault enablePan rotateSpeed={1.0} zoomSpeed={1.2} />
                 <GizmoHelper alignment="bottom-left" margin={[80, 80]}>
                     <GizmoViewport axisColors={["#ff3653", "#8adb00", "#2c8fff"]} labelColor="white" />
                 </GizmoHelper>

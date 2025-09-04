@@ -1,5 +1,5 @@
 import { Canvas, useLoader, useThree } from '@react-three/fiber';
-import { Stage, OrbitControls, GizmoHelper, GizmoViewport } from '@react-three/drei';
+import { Stage, ArcballControls, GizmoHelper, GizmoViewport } from '@react-three/drei';
 import { STLLoader } from 'three-stdlib';
 import { Suspense, useEffect, useRef } from 'react';
 import * as THREE from 'three';
@@ -70,7 +70,7 @@ export default function ThreeDViewer({ stlPath, pngPath }: { stlPath: string; pn
         try {
             const a = document.createElement('a');
             a.href = stlPath;
-            const name = stlPath.split('/').pop() || 'model.stl';
+            const name = (stlPath.split('/').pop() || 'model.stl').replace(/\/+$/, '');
             a.download = /\.stl$/i.test(name) ? name : `${name}.stl`;
             document.body.appendChild(a);
             a.click();
@@ -94,7 +94,7 @@ export default function ThreeDViewer({ stlPath, pngPath }: { stlPath: string; pn
                         {stlPath && <StlModel url={stlPath} />}
                     </Suspense>
                 </Stage>
-                <OrbitControls makeDefault autoRotate={false} />
+                <ArcballControls makeDefault enablePan rotateSpeed={1.0} zoomSpeed={1.2} />
                 <GizmoHelper alignment="bottom-left" margin={[80, 80]}>
                     <GizmoViewport axisColors={["#ff3653", "#8adb00", "#2c8fff"]} labelColor="white" />
                 </GizmoHelper>

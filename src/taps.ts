@@ -42,7 +42,9 @@ import {
     CURRENT_SOURCE_RAW_URL,
     CURRENT_SOURCE_LINE_NUMBER,
     CURRENT_3MF_PATH,
-    CURRENT_STDERR_LEN
+    CURRENT_STDERR_LEN,
+    CURRENT_OPENSCAD_STDERR_PATH,
+    CURRENT_OPENSCAD_STDERR_LEN
 } from './grips';
 
 // Tap 1: Fetches the status.json file once and caches it.
@@ -232,7 +234,8 @@ export function createModelResourceProviderTap(): Tap {
         provides: [
             CURRENT_MODEL_DATA, CURRENT_MODEL_PARTS, CURRENT_STL_PATH,
             CURRENT_PNG_PATH, CURRENT_SCAD_PATH, CURRENT_GRAPH_SVG_PATH, CURRENT_STDERR_PATH,
-            CURRENT_SOURCE_GITHUB_URL, CURRENT_SOURCE_LINE_NUMBER, CURRENT_3MF_PATH
+            CURRENT_SOURCE_GITHUB_URL, CURRENT_SOURCE_LINE_NUMBER, CURRENT_3MF_PATH,
+            CURRENT_OPENSCAD_STDERR_PATH, CURRENT_OPENSCAD_STDERR_LEN
         ],
         homeParamGrips: [RAW_STATUS_JSON],
         destinationParamGrips: [SELECTED_MODULE_NAME, SELECTED_SHAPE_NAME, SELECTED_EXAMPLE_NAME, SELECTED_PART_NAME],
@@ -378,6 +381,15 @@ export function createModelResourceProviderTap(): Tap {
             updates.set(CURRENT_GRAPH_SVG_PATH, mainExample?.graph_svg_file);
             updates.set(CURRENT_STDERR_PATH, mainExample?.error_file_name);
             updates.set(CURRENT_STDERR_LEN, mainExample?.error_file_size);
+            const isPartSelected = !!partName && partName !== DEFAULT_PART;
+            const openscadErrPath = (isPartSelected ? currentData?.openscad_err_file : mainExample?.openscad_err_file)
+                ?? currentData?.openscad_err_file
+                ?? mainExample?.openscad_err_file;
+            const openscadErrLen = (isPartSelected ? currentData?.openscad_err_file_size : mainExample?.openscad_err_file_size)
+                ?? currentData?.openscad_err_file_size
+                ?? mainExample?.openscad_err_file_size;
+            updates.set(CURRENT_OPENSCAD_STDERR_PATH, openscadErrPath);
+            updates.set(CURRENT_OPENSCAD_STDERR_LEN, openscadErrLen);
             updates.set(CURRENT_SOURCE_GITHUB_URL, result.sourceGithubUrl);
             updates.set(CURRENT_SOURCE_LINE_NUMBER, result.sourceLineNumber);
             
