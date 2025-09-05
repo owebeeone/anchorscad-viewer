@@ -3,7 +3,11 @@ import { Canvas, useLoader, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Stage, ArcballControls, GizmoHelper, GizmoViewport } from '@react-three/drei';
 import { ThreeMFLoader } from 'three-stdlib';
-import { Suspense, useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef, useLayoutEffect } from 'react';
+import ViewerControls from './ViewerControls';
+import { useGripSetter } from '@owebeeone/grip-react';
+import { MODEL_LOAD_ERROR_TAP } from '../../grips';
+import ErrorBoundary from '../ErrorBoundary';
 
 function ThreeMFModel({ url }: { url: string }) {
     const scene = useLoader(ThreeMFLoader, url);
@@ -50,6 +54,15 @@ export default function ThreeMFViewer({ threeMfPath, pngPath }: { threeMfPath: s
     const modelGroupRef = useRef<any>(null);
     const glRef = useRef<any>(null);
     const invalidateRef = useRef<(() => void) | null>(null);
+    const setLoadError = useGripSetter(MODEL_LOAD_ERROR_TAP);
+
+    useLayoutEffect(() => {
+        // This is a workaround to force the canvas to resize after the layout has settled.
+        // It helps with the initial off-center rendering issue.
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 100); // A small delay is sometimes necessary.
+    }, [threeMfPath]); // Re-run when the threeMfPath changes
 
     // Dispose previous model resources when switching files to avoid GPU leaks
     useEffect(() => {
@@ -86,11 +99,15 @@ export default function ThreeMFViewer({ threeMfPath, pngPath }: { threeMfPath: s
         // Ensure color space and disable tone mapping to better match PNGs
         gl.outputColorSpace = THREE.SRGBColorSpace;
         gl.toneMapping = THREE.NoToneMapping;
-        const onLost = (e: WebGLContextEvent) => {
+        const onLost = (e: React.SyntheticEvent<HTMLCanvasElement, WebGLContextEvent>) => {
             // Allow the context to restore automatically
             e.preventDefault();
+            console.warn("WebGL context lost.");
+            setLoadError("WebGL context lost. Please wait for it to restore.");
         };
         const onRestored = () => {
+            console.info("WebGL context restored.");
+            setLoadError(undefined); // Clear error
             // Trigger a render after restoration
             invalidate();
         };
@@ -154,32 +171,28 @@ export default function ThreeMFViewer({ threeMfPath, pngPath }: { threeMfPath: s
 
                 <Stage environment={null as any} intensity={1.0} shadows={{ type: 'contact', opacity: 0.2, blur: 2 }}>
                     <group ref={modelGroupRef as any} key={threeMfPath}>
-                        <Suspense fallback={null}>
-                            {threeMfPath && <ThreeMFModel url={threeMfPath} />}
-                        </Suspense>
+                        <ErrorBoundary
+                            resetKey={threeMfPath}
+                            onCatch={(error) => setLoadError(`3MF Load Error: ${error.message}`)}
+                            onReset={() => setLoadError(undefined)}
+                        >
+                            <Suspense fallback={null}>
+                                {threeMfPath && <ThreeMFModel url={threeMfPath} />}
+                            </Suspense>
+                        </ErrorBoundary>
                     </group>
                 </Stage>
-                <ArcballControls makeDefault enablePan rotateSpeed={1.0} zoomSpeed={1.2} />
+                <ArcballControls makeDefault enablePan />
                 <GizmoHelper alignment="bottom-left" margin={[80, 80]}>
                     <GizmoViewport axisColors={["#ff3653", "#8adb00", "#2c8fff"]} labelColor="white" />
                 </GizmoHelper>
             </Canvas>
-            <div className="absolute bottom-2 left-2 flex gap-2">
-                <button
-                    onClick={handleSaveFile}
-                    className="bg-gray-800/80 text-white text-xs px-2 py-1 rounded shadow hover:bg-gray-700"
-                    title="Download 3MF file"
-                >
-                    Save
-                </button>
-                <button
-                    onClick={handleSnapshot}
-                    className="bg-gray-800/80 text-white text-xs px-2 py-1 rounded shadow hover:bg-gray-700"
-                    title="Download snapshot PNG"
-                >
-                    Snapshot
-                </button>
-            </div>
+            <ViewerControls
+                handleSaveFile={handleSaveFile}
+                handleSnapshot={handleSnapshot}
+                saveFileTitle="Download 3MF file"
+                snapshotTitle="Download snapshot PNG"
+            />
         </div>
     );
 }

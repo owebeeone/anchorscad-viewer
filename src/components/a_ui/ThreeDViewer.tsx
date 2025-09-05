@@ -1,8 +1,12 @@
 import { Canvas, useLoader, useThree } from '@react-three/fiber';
 import { Stage, ArcballControls, GizmoHelper, GizmoViewport } from '@react-three/drei';
 import { STLLoader } from 'three-stdlib';
-import { Suspense, useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef, useLayoutEffect } from 'react';
 import * as THREE from 'three';
+import ViewerControls from './ViewerControls';
+import { useGripSetter } from '@owebeeone/grip-react';
+import { MODEL_LOAD_ERROR_TAP } from '../../grips';
+import ErrorBoundary from '../ErrorBoundary';
 
 function StlModel({ url }: { url: string }) {
     console.log('StlModel: Loading STL from URL:', url);
@@ -41,6 +45,37 @@ function StlModel({ url }: { url: string }) {
 export default function ThreeDViewer({ stlPath, pngPath }: { stlPath: string; pngPath?: string }) {
     const glRef = useRef<any>(null);
     const invalidateRef = useRef<(() => void) | null>(null);
+    const setLoadError = useGripSetter(MODEL_LOAD_ERROR_TAP);
+
+    useLayoutEffect(() => {
+        // This is a workaround to force the canvas to resize after the layout has settled.
+        // It helps with the initial off-center rendering issue.
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 100); // A small delay is sometimes necessary.
+    }, [stlPath]); // Re-run when the stlPath changes
+
+    const handleCreated = ({ gl, invalidate }: any) => {
+        glRef.current = gl;
+        invalidateRef.current = invalidate;
+        const canvas: HTMLCanvasElement = gl.domElement;
+
+        const onLost = (e: React.SyntheticEvent<HTMLCanvasElement, WebGLContextEvent>) => {
+            e.preventDefault();
+            console.warn("WebGL context lost.");
+            setLoadError("WebGL context lost. Please wait for it to restore.");
+        };
+
+        const onRestored = () => {
+            console.info("WebGL context restored.");
+            setLoadError(undefined); // Clear error
+            invalidate();
+        };
+
+        canvas.addEventListener('webglcontextlost', onLost as any, false);
+        canvas.addEventListener('webglcontextrestored', onRestored as any, false);
+    };
+
     const handleSnapshot = () => {
         try {
             const canvas = glRef.current?.domElement as HTMLCanvasElement | undefined;
@@ -84,37 +119,30 @@ export default function ThreeDViewer({ stlPath, pngPath }: { stlPath: string; pn
             <Canvas
                 camera={{ position: [2, 2, 2], fov: 50 }}
                 gl={{ preserveDrawingBuffer: true }}
-                onCreated={({ gl, invalidate }) => {
-                    glRef.current = gl;
-                    invalidateRef.current = invalidate;
-                }}
+                onCreated={handleCreated}
             >
-                <Stage environment="studio" intensity={0.6} shadows={{ type: 'contact', opacity: 0.2, blur: 2 }}>
-                    <Suspense fallback={null}>
-                        {stlPath && <StlModel url={stlPath} />}
-                    </Suspense>
-                </Stage>
-                <ArcballControls makeDefault enablePan rotateSpeed={1.0} zoomSpeed={1.2} />
+                <ErrorBoundary
+                    resetKey={stlPath}
+                    onCatch={(error) => setLoadError(`3D asset error: ${error.message}`)}
+                    onReset={() => setLoadError(undefined)}
+                >
+                    <Stage environment="studio" intensity={0.6} shadows={{ type: 'contact', opacity: 0.2, blur: 2 }}>
+                        <Suspense fallback={null}>
+                            {stlPath && <StlModel url={stlPath} />}
+                        </Suspense>
+                    </Stage>
+                </ErrorBoundary>
+                <ArcballControls makeDefault enablePan />
                 <GizmoHelper alignment="bottom-left" margin={[80, 80]}>
                     <GizmoViewport axisColors={["#ff3653", "#8adb00", "#2c8fff"]} labelColor="white" />
                 </GizmoHelper>
             </Canvas>
-            <div className="absolute bottom-2 left-2 flex gap-2">
-                <button
-                    onClick={handleSaveFile}
-                    className="bg-gray-800/80 text-white text-xs px-2 py-1 rounded shadow hover:bg-gray-700"
-                    title="Download STL file"
-                >
-                    Save
-                </button>
-                <button
-                    onClick={handleSnapshot}
-                    className="bg-gray-800/80 text-white text-xs px-2 py-1 rounded shadow hover:bg-gray-700"
-                    title="Download snapshot PNG"
-                >
-                    Snapshot
-                </button>
-            </div>
+            <ViewerControls
+                handleSaveFile={handleSaveFile}
+                handleSnapshot={handleSnapshot}
+                saveFileTitle="Download STL file"
+                snapshotTitle="Download snapshot PNG"
+            />
         </div>
     );
 }

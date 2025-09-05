@@ -30,6 +30,9 @@ export type ViewerTab = 'PNG' | 'STL' | '3MF' | 'Graph' | 'Paths' | 'Code' | 'Sc
 export const ACTIVE_TAB = defineGrip<ViewerTab>('UI.ActiveTab', 'PNG');
 export const ACTIVE_TAB_TAP = defineGrip<AtomTapHandle<ViewerTab>>('UI.ActiveTab.Tap');
 
+export const MODEL_LOAD_ERROR = defineGrip<string | undefined>('UI.ModelLoadError');
+export const MODEL_LOAD_ERROR_TAP = defineGrip<AtomTapHandle<string | undefined>>('UI.ModelLoadError.Tap');
+
 
 // --- Raw Data Grip ---
 

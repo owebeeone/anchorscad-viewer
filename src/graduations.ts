@@ -22,18 +22,18 @@ export type GridResult = {
   minorYs: number[];
 };
 
-function applyInverseMatrix(matrix: Matrix | undefined, x: number, y: number) {
-  if (!matrix) return { x, y } as const;
-  const [a, b, c, d, e, f] = matrix;
-  const det = a * d - b * c || 1;
-  const ia = d / det;
-  const ib = -b / det;
-  const ic = -c / det;
-  const id = a / det;
-  const ie = (c * f - d * e) / det;
-  const ifv = (b * e - a * f) / det;
-  return { x: ia * x + ic * y + ie, y: ib * x + id * y + ifv } as const;
-}
+// function applyInverseMatrix(matrix: Matrix | undefined, x: number, y: number) {
+//   if (!matrix) return { x, y } as const;
+//   const [a, b, c, d, e, f] = matrix;
+//   const det = a * d - b * c || 1;
+//   const ia = d / det;
+//   const ib = -b / det;
+//   const ic = -c / det;
+//   const id = a / det;
+//   const ie = (c * f - d * e) / det;
+//   const ifv = (b * e - a * f) / det;
+//   return { x: ia * x + ic * y + ie, y: ib * x + id * y + ifv } as const;
+// }
 
 function chooseStep(pxPerModel: number, minPx: number, maxPx: number) {
   const desired = Math.max(1e-9, minPx / Math.max(1e-9, pxPerModel));

@@ -62,8 +62,8 @@ import {
     PATHS_HOVER_SEGMENT_ID_TAP,
     PATHS_SHOW_CONSTRUCTION,
     PATHS_SHOW_CONSTRUCTION_TAP,
-    PATHS_SELECTED_SOURCE_GITHUB_URL,
-    PATHS_SELECTED_SOURCE_LINE,
+    //PATHS_SELECTED_SOURCE_GITHUB_URL,
+    //PATHS_SELECTED_SOURCE_LINE,
     PATHS_VIEWBOX,
     PATHS_VIEWBOX_TAP,
     PATHS_INSPECT,
@@ -77,7 +77,7 @@ export function createStatusJsonFetcherTap(): Tap {
         cacheTtlMs: 24 * 60 * 60 * 1000, // Cache for 24 hours
         requestKeyOf: () => 'status.json',
         fetcher: async (_, signal) => {
-            const response = await fetch('/status.json', { signal });
+            const response = await fetch('status.json', { signal });
             if (!response.ok) throw new Error('Failed to fetch status.json');
             return await response.json();
         },
@@ -450,7 +450,7 @@ export function createCodeTextLoaderTap(): Tap {
         fetcher: async (params, signal) => {
             const path = params.getDestParam(CURRENT_SCAD_PATH);
             if (!path) return undefined;
-            const res = await fetch(`/${path}`, { signal });
+            const res = await fetch(`${path}`, { signal });
             if (!res.ok) throw new Error(`Failed to fetch ${path}`);
             // Faster and explicit decode for large files
             const buf = await res.arrayBuffer();
@@ -474,7 +474,7 @@ export function createSourceCodeLoaderTap(): Tap {
             const spec = params.getDestParam(CURRENT_SOURCE_RAW_URL);
             if (!spec) return undefined;
             const isAbsolute = /^https?:\/\//i.test(spec);
-            const url = isAbsolute ? spec : `/${spec}`;
+            const url = isAbsolute ? spec : `${spec}`;
             console.log('SourceCodeLoaderTap fetcher: fetching', { spec, isAbsolute, url });
             try {
                 const res = await fetch(url, { signal });
@@ -542,7 +542,7 @@ export function createPathsDocumentLoaderTap(): Tap {
             // Try JSON first
             if (jsonPath) {
                 try {
-                    const url = `/${jsonPath}`;
+                    const url = `${jsonPath}`;
                     const res = await fetch(url, { signal });
                     if (res.ok) {
                         const doc = await res.json();

@@ -1,9 +1,6 @@
 import { useEffect } from "react";
 import { useGrip, useGripSetter } from "@owebeeone/grip-react";
 import {
-  CURRENT_MODEL_PARTS,
-  SELECTED_PART_NAME,
-  SELECTED_PART_NAME_TAP,
   SELECTED_MODULE_NAME,
   ACTIVE_TAB,
   ACTIVE_TAB_TAP,
@@ -12,7 +9,6 @@ import {
   CURRENT_SCAD_PATH,
   CURRENT_GRAPH_SVG_PATH,
   CURRENT_STDERR_PATH,
-  DEFAULT_PART,
   CURRENT_SOURCE_GITHUB_URL,
   CURRENT_3MF_PATH,
   CURRENT_STDERR_LEN,
@@ -28,42 +24,8 @@ import SourceCodeViewer from "./a_ui/SourceCodeViewer";
 import ErrorLogViewer from "./a_ui/ErrorLogViewer";
 import ThreeMFViewer from "./a_ui/ThreeMFViewer";
 import SvgPathsViewer from "./a_ui/SvgPathsViewer";
-
-const PartSelector = () => {
-  const parts = useGrip(CURRENT_MODEL_PARTS);
-  const selectedPart = useGrip(SELECTED_PART_NAME);
-  const setPart = useGripSetter(SELECTED_PART_NAME_TAP);
-
-  if (!parts || parts.length === 0) return null;
-
-  return (
-    <div className="flex-shrink-0 p-2 flex items-center gap-2 overflow-x-auto bg-gray-800 border-b border-gray-700">
-      <button
-        onClick={() => {
-          setPart(DEFAULT_PART);
-        }}
-        className={`px-3 py-1 text-sm rounded-md transition-colors ${
-          selectedPart === DEFAULT_PART ? "bg-blue-600 text-white" : "bg-gray-700 hover:bg-gray-600"
-        }`}
-      >
-        Main
-      </button>
-      {parts.map((part: any) => (
-        <button
-          key={part.partKey}
-          onClick={() => setPart(part.partKey)}
-          className={`px-3 py-1 text-sm rounded-md transition-colors truncate ${
-            selectedPart === part.partKey
-              ? "bg-blue-600 text-white"
-              : "bg-gray-700 hover:bg-gray-600"
-          }`}
-        >
-          {part.part_name}
-        </button>
-      ))}
-    </div>
-  );
-};
+import SlidingTabs from "./a_ui/SlidingTabs";
+import PartSelector from "./PartSelector";
 
 // Local TabName type no longer needed
 
@@ -76,7 +38,7 @@ export default function ModelDetailView() {
   const stderrPath = useGrip(CURRENT_STDERR_PATH);
   const stderrLen = useGrip(CURRENT_STDERR_LEN);
   const sourceLink = useGrip(CURRENT_SOURCE_GITHUB_URL);
-  const selectedPart = useGrip(SELECTED_PART_NAME);
+  //const selectedPart = useGrip(SELECTED_PART_NAME);
   const activeTab = useGrip(ACTIVE_TAB);
   const setActiveTab = useGripSetter(ACTIVE_TAB_TAP);
   const openscadErrPath = useGrip(CURRENT_OPENSCAD_STDERR_PATH);
@@ -202,21 +164,11 @@ export default function ModelDetailView() {
     <div className="h-full flex flex-col bg-gray-900">
       <PartSelector />
       <div className="flex-shrink-0 border-b border-gray-700 bg-gray-800">
-        <nav className="flex space-x-2 px-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab.name}
-              onClick={() => setActiveTab(tab.name)}
-              className={`px-3 py-2 text-sm font-medium transition-colors ${
-                activeTab === tab.name
-                  ? "border-b-2 border-blue-500 text-white"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              {tab.tab_title}
-            </button>
-          ))}
-        </nav>
+        <SlidingTabs
+          tabs={tabs}
+          activeTab={activeTab || "PNG"}
+          setActiveTab={setActiveTab}
+        />
       </div>
       <div className="flex-grow min-h-0 relative">{renderActiveTab()}</div>
     </div>

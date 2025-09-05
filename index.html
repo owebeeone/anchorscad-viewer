@@ -2,12 +2,36 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AnchorSCAD Runner Viewer</title>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="src/main.tsx"></script>
+    <style>
+      .sliding-tabs-container {
+        position: relative;
+        width: 100%;
+      }
+      .selection-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100px; /* Adjust width as needed */
+        height: 70%;
+        background-image: radial-gradient(circle, rgba(60, 60, 120, 0.8) 0%, rgba(45, 45, 90, 0) 100%);
+        border-radius: 8px;
+        z-index: 0;
+      }
+      .swiper-slide {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: auto;
+        padding: 0 8px;
+      }
+    </style>
   </body>
 </html>
