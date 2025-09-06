@@ -35,6 +35,10 @@ export const ACTIVE_TAB_TAP = defineGrip<AtomTapHandle<ViewerTab>>('UI.ActiveTab
 export const MODEL_LOAD_ERROR = defineGrip<string | undefined>('UI.ModelLoadError');
 export const MODEL_LOAD_ERROR_TAP = defineGrip<AtomTapHandle<string | undefined>>('UI.ModelLoadError.Tap');
 
+// Full-screen mode
+export const FULL_SCREEN = defineGrip<boolean>('UI.FullScreen', false);
+export const FULL_SCREEN_TAP = defineGrip<AtomTapHandle<boolean>>('UI.FullScreen.Tap');
+
 
 // --- Raw Data Grip ---
 

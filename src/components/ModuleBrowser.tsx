@@ -150,8 +150,7 @@ const ModelCarousel = () => {
     const setPart = useGripSetter(SELECTED_PART_NAME_TAP);
     const gridRef = useRef<HTMLDivElement | null>(null);
     const [gridCols, setGridCols] = useState<number>(2);
-
-    if (!models) return null;
+    const modelsLength = models?.length ?? 0;
 
     const handleSelect = (model: any) => {
         setShape(model.class_name);
@@ -165,8 +164,8 @@ const ModelCarousel = () => {
         if (!el) return;
         const minCard = 110; // px
         const compute = () => {
-            const half = Math.ceil(models.length / 2);
-            const maxCols = Math.max(1, Math.min(models.length, half + 2));
+            const half = Math.ceil(modelsLength / 2);
+            const maxCols = Math.max(1, Math.min(modelsLength, half + 2));
             const width = el.clientWidth || 0;
             const candidate = Math.max(1, Math.floor(width / (minCard + 8))); // account for gap
             setGridCols(Math.min(maxCols, candidate));
@@ -175,14 +174,14 @@ const ModelCarousel = () => {
         const ro = new ResizeObserver(compute);
         ro.observe(el);
         return () => ro.disconnect();
-    }, [models.length]);
+    }, [modelsLength]);
 
     return (
         <div className="h-full flex flex-col bg-gray-800/50">
             <h2 className="text-md font-semibold p-2 sticky top-0 bg-gray-800/80 backdrop-blur-sm">Models</h2>
             <div className="flex-grow p-2 overflow-y-auto">
                 <div ref={gridRef} className="grid gap-2" style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(110px, 1fr))` }}>
-                    {models.map((model: any, index: number) => (
+                    {(models || []).map((model: any, index: number) => (
                         <div key={`${model.class_name}-${model.example_name}-${index}`}
                              onClick={() => handleSelect(model)}
                              className="border border-gray-700 rounded-lg p-1 cursor-pointer hover:border-blue-500 hover:bg-gray-700/50 transition-colors flex flex-col items-center text-center">
@@ -227,3 +226,5 @@ function CollapseButton() {
         </button>
     );
 }
+
+

@@ -1,5 +1,5 @@
 import { useGrip } from '@owebeeone/grip-react';
-import { VIEW_MODE, SHOW_SPLASH, SHOW_SPLASH_TAP, SHOW_SPLASH_AUTO, MODULES_PANEL_COLLAPSED, MODULES_PANEL_COLLAPSED_TAP, ALL_MODULES_LIST, FILTERED_MODULES_LIST } from './grips';
+import { VIEW_MODE, SHOW_SPLASH, SHOW_SPLASH_TAP, SHOW_SPLASH_AUTO, MODULES_PANEL_COLLAPSED, MODULES_PANEL_COLLAPSED_TAP, ALL_MODULES_LIST, FILTERED_MODULES_LIST, FULL_SCREEN, FULL_SCREEN_TAP } from './grips';
 import ModuleBrowser from './components/ModuleBrowser';
 import ErrorBrowser from './components/ErrorBrowser';
 import ModelDetailView from './components/ModelDetailView';
@@ -15,6 +15,8 @@ export default function App() {
   const setShowSplash = useGripSetter(SHOW_SPLASH_TAP);
   const modulesCollapsed = useGrip(MODULES_PANEL_COLLAPSED);
   const setModulesCollapsed = useGripSetter(MODULES_PANEL_COLLAPSED_TAP);
+  const isFullScreen = useGrip(FULL_SCREEN) || false;
+  const setFullScreen = useGripSetter(FULL_SCREEN_TAP);
 
   // Nudge 3D canvases to re-compute size and render when layout changes
   useEffect(() => {
@@ -29,8 +31,11 @@ export default function App() {
 
   return (
     <div className="h-screen w-screen bg-gray-900 text-gray-300 font-sans flex flex-col">
-      <header className="flex-shrink-0 bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between relative">
-        <h1 className="text-lg font-bold text-white">AnchorSCAD Runner Viewer</h1>
+      <header className={`flex-shrink-0 bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between relative ${isFullScreen ? 'hidden' : ''}`}>
+        <div className="flex items-center gap-3">
+          <FullScreenButtons />
+          <h1 className="text-lg font-bold text-white">AnchorSCAD Runner Viewer</h1>
+        </div>
         <nav>
           <button
             className="text-sm px-2 py-1 rounded bg-gray-700 text-white hover:bg-gray-600"
@@ -45,14 +50,14 @@ export default function App() {
         {(showSplash || showSplashAuto) && <Splash />}
         {/* KeepAlive keeps module-related grips subscribed so they don't churn when collapsing */}
         <KeepAliveModules />
-        <div className="absolute inset-0">
+        <div className={`absolute inset-0 ${isFullScreen ? 'bg-black' : ''}`}>
           <div
             className={`absolute inset-0 z-10 transition-all duration-[600ms] ${modulesCollapsed ? 'opacity-0 pointer-events-none -translate-x-4 invisible cursor-auto' : 'opacity-100 translate-x-0'}`}
             aria-hidden={modulesCollapsed}
           >
             {!modulesCollapsed && (
               <PanelGroup direction="horizontal">
-                <Panel defaultSize={20} minSize={8}>
+                <Panel defaultSize={20} minSize={8} className={`${isFullScreen ? 'hidden' : ''}`}>
                   {viewMode === 'modules' ? <ModuleBrowser /> : <ErrorBrowser />}
                 </Panel>
                 <PanelResizeHandle className="w-1 bg-gray-800 hover:bg-blue-600 transition-colors" />
@@ -60,6 +65,7 @@ export default function App() {
                   <div className="relative h-full">
                     <ModelDetailView />
                     <CollapseOverlayButton />
+                    <FullScreenRestoreOverlay />
                   </div>
                 </Panel>
               </PanelGroup>
@@ -73,6 +79,7 @@ export default function App() {
             <div className="h-full w-full relative">
               {modulesCollapsed && <ModelDetailView />}
               <HoverExpandControl />
+              <FullScreenRestoreOverlay />
             </div>
           </div>
         </div>
@@ -144,7 +151,63 @@ function CollapseOverlayButton() {
       title="Collapse modules panel"
     >
       <svg className="h-24 w-3" viewBox="0 0 12 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-        <polygon points="12,0 0,48 12,96" fill="currentColor" stroke="#000" stroke-opacity="0.6" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linejoin="round" />
+        <polygon points="12,0 0,48 12,96" fill="currentColor" stroke="#000" strokeOpacity="0.6" strokeWidth="3" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+}
+
+function FullScreenButtons() {
+  const isFull = useGrip(FULL_SCREEN) || false;
+  const setFull = useGripSetter(FULL_SCREEN_TAP);
+  useEffect(() => {
+    const onChange = () => setFull(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, [setFull]);
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => {
+          const target = document.documentElement;
+          if (target.requestFullscreen) {
+            target.requestFullscreen().then(() => setFull(true)).catch(() => setFull(false));
+          } else {
+            setFull(true);
+          }
+        }}
+        title="Full screen"
+        className="h-7 w-7 grid place-items-center rounded hover:bg-gray-700"
+      >
+        <svg viewBox="0 0 20 20" className="h-4 w-4">
+          <rect x="2" y="2" width="16" height="16" fill="#f3f4f6" stroke="#9ca3af" strokeWidth="1.5" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+function FullScreenRestoreOverlay() {
+  const isFull = useGrip(FULL_SCREEN) || false;
+  const setFull = useGripSetter(FULL_SCREEN_TAP);
+  if (!isFull) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().finally(() => setFull(false));
+        } else {
+          setFull(false);
+        }
+      }}
+      title="Restore"
+      className="absolute top-2 left-2 z-40 h-8 w-8 grid place-items-center rounded bg-gray-800/60 hover:bg-gray-700 text-white"
+    >
+      <svg viewBox="0 0 20 20" className="h-4 w-4">
+        <rect x="2" y="2" width="16" height="16" fill="#9ca3af" stroke="#e5e7eb" strokeWidth="1.5" />
+        <rect x="6.5" y="6.5" width="7" height="7" fill="#e5e7eb" stroke="#e5e7eb" strokeWidth="1.2" />
       </svg>
     </button>
   );

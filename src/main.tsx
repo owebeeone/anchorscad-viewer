@@ -31,7 +31,8 @@ import {
     PathsViewBoxTap as _PathsViewBoxTap,
     PathsInspectTap as _PathsInspectTap,
     ModulesPanelCollapsedTap as _ModulesPanelCollapsedTap,
-    ModelLoadErrorTap as _ModelLoadErrorTap
+    ModelLoadErrorTap as _ModelLoadErrorTap,
+    FullScreenTap as _FullScreenTap
 } from './taps.ts'
 
 // Register all data provider taps with the GROK engine
@@ -64,6 +65,7 @@ grok.registerTap(_ShowSplashTap);
 grok.registerTap(_ShowSplashAutoTap);
 grok.registerTap(_ModulesPanelCollapsedTap);
 grok.registerTap(_ModelLoadErrorTap);
+grok.registerTap(_FullScreenTap);
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
