@@ -90,30 +90,32 @@ const ModuleList = () => {
                     <h2 className="text-md font-semibold">Modules</h2>
                     <CollapseButton />
                 </div>
-                <div className="relative">
-                    <input
-                        type="text"
-                        placeholder="Filter modules (space-separated keywords)"
-                        className="w-full pr-7 px-2 py-1 text-sm rounded bg-gray-700 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={filterValue}
-                        onChange={(e) => setFilter(e.target.value)}
-                    />
-                    {filterValue && filterValue.length > 0 && (
-                        <button
-                            type="button"
-                            onClick={() => setFilter("")}
-                            className="absolute inset-y-0 right-1 my-auto h-6 w-6 flex items-center justify-center rounded hover:bg-gray-600 text-gray-300 hover:text-white"
-                            aria-label="Clear filter"
-                            title="Clear filter"
-                        >
-                            ×
-                        </button>
-                    )}
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative flex-1 min-w-[12ch]">
+                        <input
+                            type="text"
+                            placeholder="Filter modules (space-separated keywords)"
+                            className="w-full pr-7 px-2 py-1 text-sm rounded bg-gray-700 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={filterValue}
+                            onChange={(e) => setFilter(e.target.value)}
+                        />
+                        {filterValue && filterValue.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => setFilter("")}
+                                className="absolute inset-y-0 right-1 my-auto h-6 w-6 flex items-center justify-center rounded hover:bg-gray-600 text-gray-300 hover:text-white"
+                                aria-label="Clear filter"
+                                title="Clear filter"
+                            >
+                                ×
+                            </button>
+                        )}
+                    </div>
+                    <label className="inline-flex items-center gap-1 text-sm whitespace-nowrap" title="Show modules with errors only">
+                        <input type="checkbox" className="accent-blue-500" checked={!!errorsOnly} onChange={(e) => setErrorsOnly(e.target.checked)} />
+                        Errors
+                    </label>
                 </div>
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" className="accent-blue-500" checked={!!errorsOnly} onChange={(e) => setErrorsOnly(e.target.checked)} />
-                    Show modules with errors only
-                </label>
             </div>
             {modules ? (
                 <ul className="divide-y divide-gray-800">
