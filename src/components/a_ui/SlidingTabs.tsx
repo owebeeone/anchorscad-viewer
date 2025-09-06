@@ -55,12 +55,6 @@ export default function SlidingTabs<T extends string>({
         }}
         slidesPerView={"auto"}
         centeredSlides={true}
-        onSlideChange={(swiper) => {
-          const activeIndex = swiper.activeIndex;
-          if (tabs[activeIndex]) {
-            setActiveTab(tabs[activeIndex].name);
-          }
-        }}
         className="py-2"
       >
         {tabs.map((tab) => (

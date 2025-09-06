@@ -33,7 +33,25 @@ const ModuleList = () => {
     const errorsOnly = useGrip(MODULE_FILTER_ERRORS_ONLY);
     const setErrorsOnly = useGripSetter(MODULE_FILTER_ERRORS_ONLY_TAP);
     const filterValue = useGrip(MODULE_FILTER_STRING);
-
+    const listScrollRef = useRef<HTMLDivElement | null>(null);
+    
+    // Persist and restore scroll position of modules list (must run every render path)
+    useEffect(() => {
+        const key = 'modules:list:scrollTop';
+        const el = listScrollRef.current;
+        if (!el) return;
+        const saved = sessionStorage.getItem(key);
+        if (saved) {
+            requestAnimationFrame(() => {
+                el.scrollTop = parseInt(saved, 10) || 0;
+            });
+        }
+        const onScroll = () => {
+            sessionStorage.setItem(key, String(el.scrollTop));
+        };
+        el.addEventListener('scroll', onScroll, { passive: true });
+        return () => el.removeEventListener('scroll', onScroll as any);
+    }, [modules]);
 
     const prevModuleRef = useRef<string | undefined>();
     
@@ -48,7 +66,7 @@ const ModuleList = () => {
         prevModuleRef.current = selectedModule;
     }, [selectedModule, models, setShape, setExample, setPart]);
 
-    if (!modules) return <div className="p-2 text-gray-500">Loading modules...</div>;
+    // Always run hooks above; render a loading state conditionally below
 
     const handleSelect = (moduleName: string) => {
         setModule(moduleName);
@@ -66,7 +84,7 @@ const ModuleList = () => {
     };
 
     return (
-        <div className="h-full overflow-y-auto bg-gray-800/50">
+        <div ref={listScrollRef} className="h-full overflow-y-auto bg-gray-800/50">
             <div className="sticky top-0 bg-gray-800/80 backdrop-blur-sm p-2 space-y-2 border-b border-gray-700">
                 <div className="flex items-center justify-between">
                     <h2 className="text-md font-semibold">Modules</h2>
@@ -97,24 +115,28 @@ const ModuleList = () => {
                     Show modules with errors only
                 </label>
             </div>
-            <ul className="divide-y divide-gray-800">
-                {modules.map((module: any) => (
-                    <li key={module.module_name}>
-                        <button
-                            onClick={() => handleSelect(module.module_name)}
-                            className={`w-full text-left p-2 flex items-center gap-2 hover:bg-gray-700 ${selectedModule === module.module_name ? 'bg-blue-600/30' : ''}`}
-                            title={module.module_name}
-                        >
-                            <img
-                                src={module.preview_png || `https://placehold.co/40x40/1f2937/d1d5db?text=\u25A1`}
-                                alt="preview"
-                                className="w-10 h-10 object-contain rounded border border-gray-700 bg-gray-900"
-                            />
-                            <span className="text-sm text-gray-200 truncate">{formatName(module.module_name)}</span>
-                        </button>
-                    </li>
-                ))}
-            </ul>
+            {modules ? (
+                <ul className="divide-y divide-gray-800">
+                    {modules.map((module: any) => (
+                        <li key={module.module_name}>
+                            <button
+                                onClick={() => handleSelect(module.module_name)}
+                                className={`w-full text-left p-2 flex items-center gap-2 hover:bg-gray-700 ${selectedModule === module.module_name ? 'bg-blue-600/30' : ''}`}
+                                title={module.module_name}
+                            >
+                                <img
+                                    src={module.preview_png || `https://placehold.co/40x40/1f2937/d1d5db?text=\u25A1`}
+                                    alt="preview"
+                                    className="w-10 h-10 object-contain rounded border border-gray-700 bg-gray-900"
+                                />
+                                <span className="text-sm text-gray-200 truncate">{formatName(module.module_name)}</span>
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <div className="p-2 text-gray-500">Loading modules...</div>
+            )}
         </div>
     );
 };

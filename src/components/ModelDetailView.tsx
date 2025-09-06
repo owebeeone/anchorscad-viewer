@@ -57,12 +57,6 @@ export default function ModelDetailView() {
 //     stderrPath,
 //   });
 
-  // Reset to PNG tab when module changes (when selectedModule changes)
-  const selectedModule = useGrip(SELECTED_MODULE_NAME);
-  useEffect(() => {
-    setActiveTab("PNG");
-  }, [selectedModule, setActiveTab]);
-
   if (!stlPath && !scadPath && !svgPath && !stderrPath) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">

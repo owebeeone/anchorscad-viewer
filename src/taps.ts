@@ -71,6 +71,8 @@ import {
     MODULES_PANEL_COLLAPSED,
     MODULES_PANEL_COLLAPSED_TAP
 } from './grips';
+// Also import model load error grips for 3D viewers
+import { MODEL_LOAD_ERROR, MODEL_LOAD_ERROR_TAP } from './grips';
 
 // Tap 1: Fetches the status.json file once and caches it.
 export function createStatusJsonFetcherTap(): Tap {
@@ -611,3 +613,4 @@ export const ModuleFilterErrorsOnlyTap = createAtomValueTap(MODULE_FILTER_ERRORS
 export const ShowSplashTap = createAtomValueTap(SHOW_SPLASH, { initial: false, handleGrip: SHOW_SPLASH_TAP });
 export const ShowSplashAutoTap = createAtomValueTap(SHOW_SPLASH_AUTO, { initial: true, handleGrip: SHOW_SPLASH_AUTO_TAP });
 export const ModulesPanelCollapsedTap = createAtomValueTap(MODULES_PANEL_COLLAPSED, { initial: false, handleGrip: MODULES_PANEL_COLLAPSED_TAP });
+export const ModelLoadErrorTap = createAtomValueTap(MODEL_LOAD_ERROR, { handleGrip: MODEL_LOAD_ERROR_TAP });
