@@ -126,11 +126,13 @@ const ModuleList = () => {
                                 className={`w-full text-left p-2 flex items-center gap-2 hover:bg-gray-700 ${selectedModule === module.module_name ? 'bg-blue-600/30' : ''}`}
                                 title={module.module_name}
                             >
-                                <img
-                                    src={module.preview_png || `https://placehold.co/40x40/1f2937/d1d5db?text=\u25A1`}
-                                    alt="preview"
-                                    className="w-10 h-10 object-contain rounded border border-gray-700 bg-gray-900"
-                                />
+                                <div className="w-10 h-10 overflow-hidden rounded-md border border-gray-700 bg-gray-900 shadow-sm">
+                                    <img
+                                        src={module.preview_png || `https://placehold.co/40x40/1f2937/d1d5db?text=\u25A1`}
+                                        alt="preview"
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
                                 <span className="text-sm text-gray-200 truncate">{formatName(module.module_name)}</span>
                             </button>
                         </li>
@@ -187,7 +189,7 @@ const ModelCarousel = () => {
                              className="border border-gray-700 rounded-lg p-1 cursor-pointer hover:border-blue-500 hover:bg-gray-700/50 transition-colors flex flex-col items-center text-center">
                             <img src={model.png_file || `https://placehold.co/100x100/1f2937/d1d5db?text=No+Preview`} 
                                  alt={`${model.class_name} - ${model.example_name}`} 
-                                 className="w-full aspect-[4/3] object-contain mb-1"/>
+                                 className="w-full aspect-[4/3] object-contain mb-1 rounded-lg shadow-sm"/>
                             <span className="text-xs text-gray-400">{model.class_name}</span>
                             <span className="text-xs font-bold">{model.example_name}</span>
                         </div>

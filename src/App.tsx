@@ -60,11 +60,13 @@ export default function App() {
                 <Panel defaultSize={20} minSize={8} className={`${isFullScreen ? 'hidden' : ''}`}>
                   {viewMode === 'modules' ? <ModuleBrowser /> : <ErrorBrowser />}
                 </Panel>
-                <PanelResizeHandle className="w-1 bg-gray-800 hover:bg-blue-600 transition-colors" />
+                {!isFullScreen && (
+                  <PanelResizeHandle className="w-1 bg-gray-800 hover:bg-blue-600 transition-colors" />
+                )}
                 <Panel defaultSize={80} minSize={30}>
                   <div className="relative h-full">
                     <ModelDetailView />
-                    <CollapseOverlayButton />
+                    {!isFullScreen && <CollapseOverlayButton />}
                     <FullScreenRestoreOverlay />
                   </div>
                 </Panel>
@@ -78,7 +80,7 @@ export default function App() {
           >
             <div className="h-full w-full relative">
               {modulesCollapsed && <ModelDetailView />}
-              <HoverExpandControl />
+              {!isFullScreen && <HoverExpandControl />}
               <FullScreenRestoreOverlay />
             </div>
           </div>

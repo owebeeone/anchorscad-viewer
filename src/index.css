@@ -5,4 +5,6 @@
 body {
   background-color: #111827;
   color: #d1d5db;
+  margin: 0;
+  overflow: hidden;
 }
