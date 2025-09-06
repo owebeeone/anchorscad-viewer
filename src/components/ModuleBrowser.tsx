@@ -14,6 +14,7 @@ import {
     MODULE_FILTER_ERRORS_ONLY,
     MODULE_FILTER_ERRORS_ONLY_TAP,
     DEFAULT_PART,
+    MODULES_PANEL_COLLAPSED_TAP,
 } from '../grips';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import 'swiper/css';
@@ -67,7 +68,10 @@ const ModuleList = () => {
     return (
         <div className="h-full overflow-y-auto bg-gray-800/50">
             <div className="sticky top-0 bg-gray-800/80 backdrop-blur-sm p-2 space-y-2 border-b border-gray-700">
-                <h2 className="text-md font-semibold">Modules</h2>
+                <div className="flex items-center justify-between">
+                    <h2 className="text-md font-semibold">Modules</h2>
+                    <CollapseButton />
+                </div>
                 <div className="relative">
                     <input
                         type="text"
@@ -163,5 +167,19 @@ export default function ModuleBrowser() {
                 <ModelCarousel />
             </Panel>
         </PanelGroup>
+    );
+}
+
+function CollapseButton() {
+    const setCollapsed = useGripSetter(MODULES_PANEL_COLLAPSED_TAP);
+    return (
+        <button
+            type="button"
+            onClick={() => setCollapsed(true)}
+            title="Collapse modules panel"
+            className="px-2 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-gray-200"
+        >
+            Collapse
+        </button>
     );
 }

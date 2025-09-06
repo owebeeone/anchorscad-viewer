@@ -29,7 +29,8 @@ import {
     PathsHoverSegmentIdTap as _PathsHoverSegmentIdTap,
     PathsShowConstructionTap as _PathsShowConstructionTap,
     PathsViewBoxTap as _PathsViewBoxTap,
-    PathsInspectTap as _PathsInspectTap
+    PathsInspectTap as _PathsInspectTap,
+    ModulesPanelCollapsedTap as _ModulesPanelCollapsedTap
 } from './taps.ts'
 
 // Register all data provider taps with the GROK engine
@@ -60,6 +61,7 @@ grok.registerTap(_PathsViewBoxTap);
 grok.registerTap(_PathsInspectTap);
 grok.registerTap(_ShowSplashTap);
 grok.registerTap(_ShowSplashAutoTap);
+grok.registerTap(_ModulesPanelCollapsedTap);
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

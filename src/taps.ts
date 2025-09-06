@@ -67,7 +67,9 @@ import {
     PATHS_VIEWBOX,
     PATHS_VIEWBOX_TAP,
     PATHS_INSPECT,
-    PATHS_INSPECT_TAP
+    PATHS_INSPECT_TAP,
+    MODULES_PANEL_COLLAPSED,
+    MODULES_PANEL_COLLAPSED_TAP
 } from './grips';
 
 // Tap 1: Fetches the status.json file once and caches it.
@@ -608,3 +610,4 @@ export const ModuleFilterStringTap = createAtomValueTap(MODULE_FILTER_STRING, { 
 export const ModuleFilterErrorsOnlyTap = createAtomValueTap(MODULE_FILTER_ERRORS_ONLY, { handleGrip: MODULE_FILTER_ERRORS_ONLY_TAP });
 export const ShowSplashTap = createAtomValueTap(SHOW_SPLASH, { initial: false, handleGrip: SHOW_SPLASH_TAP });
 export const ShowSplashAutoTap = createAtomValueTap(SHOW_SPLASH_AUTO, { initial: true, handleGrip: SHOW_SPLASH_AUTO_TAP });
+export const ModulesPanelCollapsedTap = createAtomValueTap(MODULES_PANEL_COLLAPSED, { initial: false, handleGrip: MODULES_PANEL_COLLAPSED_TAP });
