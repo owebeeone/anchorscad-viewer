@@ -137,7 +137,7 @@ const ModelCarousel = () => {
         <div className="h-full flex flex-col bg-gray-800/50">
             <h2 className="text-md font-semibold p-2 sticky top-0 bg-gray-800/80 backdrop-blur-sm">Models</h2>
             <div className="flex-grow p-2 overflow-y-auto">
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-2">
                     {models.map((model: any, index: number) => (
                         <div key={`${model.class_name}-${model.example_name}-${index}`}
                              onClick={() => handleSelect(model)}

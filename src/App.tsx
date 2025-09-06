@@ -6,7 +6,7 @@ import ModelDetailView from './components/ModelDetailView';
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import Splash from './components/Splash';
 import { useGripSetter } from '@owebeeone/grip-react';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
 export default function App() {
   const viewMode = useGrip(VIEW_MODE);
@@ -15,6 +15,17 @@ export default function App() {
   const setShowSplash = useGripSetter(SHOW_SPLASH_TAP);
   const modulesCollapsed = useGrip(MODULES_PANEL_COLLAPSED);
   const setModulesCollapsed = useGripSetter(MODULES_PANEL_COLLAPSED_TAP);
+
+  // Nudge 3D canvases to re-compute size and render when layout changes
+  useEffect(() => {
+    // Immediate resize event to update layout synchronously
+    window.dispatchEvent(new Event('resize'));
+    // And once more after the transition finishes
+    const timeoutId: number = window.setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 650);
+    return () => window.clearTimeout(timeoutId);
+  }, [modulesCollapsed]);
 
   return (
     <div className="h-screen w-screen bg-gray-900 text-gray-300 font-sans flex flex-col">
@@ -41,7 +52,7 @@ export default function App() {
               <Panel defaultSize={20} minSize={15}>
                 {viewMode === 'modules' ? <ModuleBrowser /> : <ErrorBrowser />}
               </Panel>
-              <PanelResizeHandle className="relative w-1 bg-transparent transition-colors overflow-visible">
+              <PanelResizeHandle className="relative w-1 bg-transparent transition-colors overflow-visible z-30">
                 <CollapseInHandle />
               </PanelResizeHandle>
               <Panel defaultSize={80} minSize={30}>
