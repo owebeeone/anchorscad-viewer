@@ -1,5 +1,5 @@
 import { useGrip, useGripSetter } from '@owebeeone/grip-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     ALL_MODULES_LIST,
     FILTERED_MODULES_LIST,
@@ -146,6 +146,8 @@ const ModelCarousel = () => {
     const setShape = useGripSetter(SELECTED_SHAPE_NAME_TAP);
     const setExample = useGripSetter(SELECTED_EXAMPLE_NAME_TAP);
     const setPart = useGripSetter(SELECTED_PART_NAME_TAP);
+    const gridRef = useRef<HTMLDivElement | null>(null);
+    const [gridCols, setGridCols] = useState<number>(2);
 
     if (!models) return null;
 
@@ -155,18 +157,36 @@ const ModelCarousel = () => {
         setPart(DEFAULT_PART); // Reset part selection
     }
 
+    // Compute responsive columns: shrink cards until ~110px min, cap at ≈ (models/2)+2
+    useEffect(() => {
+        const el = gridRef.current;
+        if (!el) return;
+        const minCard = 110; // px
+        const compute = () => {
+            const half = Math.ceil(models.length / 2);
+            const maxCols = Math.max(1, Math.min(models.length, half + 2));
+            const width = el.clientWidth || 0;
+            const candidate = Math.max(1, Math.floor(width / (minCard + 8))); // account for gap
+            setGridCols(Math.min(maxCols, candidate));
+        };
+        compute();
+        const ro = new ResizeObserver(compute);
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, [models.length]);
+
     return (
         <div className="h-full flex flex-col bg-gray-800/50">
             <h2 className="text-md font-semibold p-2 sticky top-0 bg-gray-800/80 backdrop-blur-sm">Models</h2>
             <div className="flex-grow p-2 overflow-y-auto">
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-2">
+                <div ref={gridRef} className="grid gap-2" style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(110px, 1fr))` }}>
                     {models.map((model: any, index: number) => (
                         <div key={`${model.class_name}-${model.example_name}-${index}`}
                              onClick={() => handleSelect(model)}
                              className="border border-gray-700 rounded-lg p-1 cursor-pointer hover:border-blue-500 hover:bg-gray-700/50 transition-colors flex flex-col items-center text-center">
                             <img src={model.png_file || `https://placehold.co/100x100/1f2937/d1d5db?text=No+Preview`} 
                                  alt={`${model.class_name} - ${model.example_name}`} 
-                                 className="w-full h-24 object-contain mb-1"/>
+                                 className="w-full aspect-[4/3] object-contain mb-1"/>
                             <span className="text-xs text-gray-400">{model.class_name}</span>
                             <span className="text-xs font-bold">{model.example_name}</span>
                         </div>

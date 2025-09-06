@@ -52,7 +52,7 @@ export default function App() {
           >
             {!modulesCollapsed && (
               <PanelGroup direction="horizontal">
-                <Panel defaultSize={20} minSize={15}>
+                <Panel defaultSize={20} minSize={8}>
                   {viewMode === 'modules' ? <ModuleBrowser /> : <ErrorBrowser />}
                 </Panel>
                 <PanelResizeHandle className="w-1 bg-gray-800 hover:bg-blue-600 transition-colors" />
