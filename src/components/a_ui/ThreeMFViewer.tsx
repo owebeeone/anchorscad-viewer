@@ -11,6 +11,8 @@ import ErrorBoundary from '../ErrorBoundary';
 
 function ThreeMFModel({ url }: { url: string }) {
     const scene = useLoader(ThreeMFLoader, url);
+    const modelReadyRef = useRef(false);
+    
     // Normalize materials to reduce specular tinting and disable tone mapping
     // for closer color parity with the PNG preview
     useEffect(() => {
@@ -24,28 +26,51 @@ function ThreeMFModel({ url }: { url: string }) {
             };
             if (Array.isArray(mat)) mat.forEach(apply); else apply(mat);
         });
+        
+        // Mark model as ready after materials are processed
+        modelReadyRef.current = true;
     }, [scene]);
 
     // Fit camera to object and set desired orientation similar to PNG
     const { camera } = useThree();
     const controls = useThree((s: any) => s.controls) as any;
     useEffect(() => {
-        // Compute bounding sphere of the scene
-        const box = new THREE.Box3().setFromObject(scene);
-        const center = box.getCenter(new THREE.Vector3());
-        const radius = box.getSize(new THREE.Vector3()).length() * 0.5;
-        const phi = THREE.MathUtils.degToRad(55);
-        const theta = THREE.MathUtils.degToRad(45);
-        const fov = (camera as THREE.PerspectiveCamera).fov ?? 50;
-        const distance = radius / Math.sin(THREE.MathUtils.degToRad(fov) / 2) * 1.2;
-        const offset = new THREE.Vector3().setFromSphericalCoords(distance, phi, theta);
-        camera.up.set(0, 0, 1);
-        camera.position.copy(center.clone().add(offset));
-        camera.lookAt(center);
-        if (controls?.target) {
-            controls.target.copy(center);
-            controls.update?.();
-        }
+        // Wait for model to be ready before positioning camera
+        const checkAndPositionCamera = () => {
+            if (!modelReadyRef.current) {
+                // Model not ready yet, check again in next frame
+                requestAnimationFrame(checkAndPositionCamera);
+                return;
+            }
+            
+            try {
+                // Compute bounding sphere of the scene
+                const box = new THREE.Box3().setFromObject(scene);
+                const center = box.getCenter(new THREE.Vector3());
+                const radius = box.getSize(new THREE.Vector3()).length() * 0.5;
+                
+                // Only position camera if we have valid bounds
+                if (radius > 0) {
+                    const phi = THREE.MathUtils.degToRad(55);
+                    const theta = THREE.MathUtils.degToRad(45);
+                    const fov = (camera as THREE.PerspectiveCamera).fov ?? 50;
+                    const distance = radius / Math.sin(THREE.MathUtils.degToRad(fov) / 2) * 1.2;
+                    const offset = new THREE.Vector3().setFromSphericalCoords(distance, phi, theta);
+                    camera.up.set(0, 0, 1);
+                    camera.position.copy(center.clone().add(offset));
+                    camera.lookAt(center);
+                    if (controls?.target) {
+                        controls.target.copy(center);
+                        controls.update?.();
+                    }
+                }
+            } catch (error) {
+                console.warn('Failed to position camera:', error);
+            }
+        };
+        
+        // Start checking for model readiness
+        checkAndPositionCamera();
     }, [scene, camera, controls]);
     return <primitive object={scene} />;
 }

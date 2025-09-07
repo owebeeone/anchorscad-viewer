@@ -16,6 +16,13 @@ export default function App() {
   const modulesCollapsed = useGrip(MODULES_PANEL_COLLAPSED);
   const isFullScreen = useGrip(FULL_SCREEN) || false;
 
+  // Hide loading screen when app loads
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).hideLoadingScreen) {
+      (window as any).hideLoadingScreen();
+    }
+  }, []);
+
   // Nudge 3D canvases to re-compute size and render when layout changes
   useEffect(() => {
     // Immediate resize event to update layout synchronously
