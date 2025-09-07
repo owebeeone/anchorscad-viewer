@@ -1,7 +1,6 @@
-import { useEffect } from "react";
+// no-op
 import { useGrip, useGripSetter } from "@owebeeone/grip-react";
 import {
-  SELECTED_MODULE_NAME,
   ACTIVE_TAB,
   ACTIVE_TAB_TAP,
   CURRENT_STL_PATH,

@@ -48,12 +48,11 @@ export default function ThreeDViewer({ stlPath, pngPath }: { stlPath: string; pn
     const setLoadError = useGripSetter(MODEL_LOAD_ERROR_TAP);
 
     useLayoutEffect(() => {
-        // This is a workaround to force the canvas to resize after the layout has settled.
-        // It helps with the initial off-center rendering issue.
-        setTimeout(() => {
-            window.dispatchEvent(new Event('resize'));
-        }, 100); // A small delay is sometimes necessary.
-    }, [stlPath]); // Re-run when the stlPath changes
+        // Force recompute on path or container resize to avoid stale camera fit
+        const tick = () => window.dispatchEvent(new Event('resize'));
+        const t = window.setTimeout(tick, 50);
+        return () => window.clearTimeout(t);
+    }, [stlPath]);
 
     const handleCreated = ({ gl, invalidate }: any) => {
         glRef.current = gl;
@@ -116,27 +115,28 @@ export default function ThreeDViewer({ stlPath, pngPath }: { stlPath: string; pn
     };
     return (
         <div className="relative h-full w-full">
-            <Canvas
-                camera={{ position: [2, 2, 2], fov: 50 }}
-                gl={{ preserveDrawingBuffer: true }}
-                onCreated={handleCreated}
+            <ErrorBoundary
+                resetKey={stlPath}
+                onCatch={(error) => setLoadError(`3D Viewer Error: ${error.message}`)}
+                onReset={() => setLoadError(undefined)}
             >
-                <ErrorBoundary
-                    resetKey={stlPath}
-                    onCatch={(error) => setLoadError(`3D asset error: ${error.message}`)}
-                    onReset={() => setLoadError(undefined)}
+                <Canvas
+                    camera={{ position: [2, 2, 2], fov: 50 }}
+                    gl={{ preserveDrawingBuffer: true }}
+                    onCreated={handleCreated}
+                    frameloop="demand"
                 >
                     <Stage environment="studio" intensity={0.6} shadows={{ type: 'contact', opacity: 0.2, blur: 2 }}>
                         <Suspense fallback={null}>
-                            {stlPath && <StlModel url={stlPath} />}
+                            {stlPath && <StlModel key={stlPath} url={stlPath} />}
                         </Suspense>
                     </Stage>
-                </ErrorBoundary>
-                <ArcballControls makeDefault enablePan />
-                <GizmoHelper alignment="bottom-left" margin={[80, 80]}>
-                    <GizmoViewport axisColors={["#ff3653", "#8adb00", "#2c8fff"]} labelColor="white" />
-                </GizmoHelper>
-            </Canvas>
+                    <ArcballControls makeDefault enablePan />
+                    <GizmoHelper alignment="bottom-left" margin={[80, 80]}>
+                        <GizmoViewport axisColors={["#ff3653", "#8adb00", "#2c8fff"]} labelColor="white" />
+                    </GizmoHelper>
+                </Canvas>
+            </ErrorBoundary>
             <ViewerControls
                 handleSaveFile={handleSaveFile}
                 handleSnapshot={handleSnapshot}

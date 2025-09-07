@@ -14,9 +14,7 @@ export default function App() {
   const showSplashAuto = useGrip(SHOW_SPLASH_AUTO);
   const setShowSplash = useGripSetter(SHOW_SPLASH_TAP);
   const modulesCollapsed = useGrip(MODULES_PANEL_COLLAPSED);
-  const setModulesCollapsed = useGripSetter(MODULES_PANEL_COLLAPSED_TAP);
   const isFullScreen = useGrip(FULL_SCREEN) || false;
-  const setFullScreen = useGripSetter(FULL_SCREEN_TAP);
 
   // Nudge 3D canvases to re-compute size and render when layout changes
   useEffect(() => {
@@ -127,21 +125,7 @@ function HoverExpandControl() {
   );
 }
 
-function CollapseInHandle() {
-  const setCollapsed = useGripSetter(MODULES_PANEL_COLLAPSED_TAP);
-  return (
-    <button
-      type="button"
-      onClick={() => setCollapsed(true)}
-      className="absolute inset-y-0 left-full ml-1 my-auto h-24 w-3 flex items-center justify-center text-white/80 hover:text-white bg-gray-800/10 hover:bg-blue-600/20 z-20"
-      title="Collapse modules panel"
-    >
-      <svg className="h-24 w-3" viewBox="0 0 12 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-        <polygon points="12,0 0,48 12,96" fill="currentColor" stroke="#000" strokeOpacity="0.6" strokeWidth="3" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-      </svg>
-    </button>
-  );
-}
+// (unused) CollapseInHandle removed
 
 function CollapseOverlayButton() {
   const setCollapsed = useGripSetter(MODULES_PANEL_COLLAPSED_TAP);
@@ -160,7 +144,6 @@ function CollapseOverlayButton() {
 }
 
 function FullScreenButtons() {
-  const isFull = useGrip(FULL_SCREEN) || false;
   const setFull = useGripSetter(FULL_SCREEN_TAP);
   useEffect(() => {
     const onChange = () => setFull(!!document.fullscreenElement);

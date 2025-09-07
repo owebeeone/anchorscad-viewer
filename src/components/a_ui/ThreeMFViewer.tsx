@@ -57,12 +57,10 @@ export default function ThreeMFViewer({ threeMfPath, pngPath }: { threeMfPath: s
     const setLoadError = useGripSetter(MODEL_LOAD_ERROR_TAP);
 
     useLayoutEffect(() => {
-        // This is a workaround to force the canvas to resize after the layout has settled.
-        // It helps with the initial off-center rendering issue.
-        setTimeout(() => {
-            window.dispatchEvent(new Event('resize'));
-        }, 100); // A small delay is sometimes necessary.
-    }, [threeMfPath]); // Re-run when the threeMfPath changes
+        const tick = () => window.dispatchEvent(new Event('resize'));
+        const t = window.setTimeout(tick, 50);
+        return () => window.clearTimeout(t);
+    }, [threeMfPath]);
 
     // Dispose previous model resources when switching files to avoid GPU leaks
     useEffect(() => {
@@ -156,37 +154,37 @@ export default function ThreeMFViewer({ threeMfPath, pngPath }: { threeMfPath: s
 
     return (
         <div className="relative h-full w-full">
-            {/* Add the flat prop here to disable tone mapping */}
-            <Canvas
-                flat
-                dpr={[1, 1.5]}
-                frameloop="demand"
-                gl={{ antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
-                onCreated={handleCreated}
-                camera={{ position: [2, 2, 2], fov: 50 }}
+            <ErrorBoundary
+                resetKey={threeMfPath}
+                onCatch={(error) => setLoadError(`3MF Viewer Error: ${error.message}`)}
+                onReset={() => setLoadError(undefined)}
             >
-                <ambientLight intensity={1.0} color={0xffffff} />
-                <directionalLight position={[10, 10, 5]} intensity={1.4} color={0xffff00} />
-                <directionalLight position={[10, -10, 5]} intensity={1.9} color={0xffffff} />
+                {/* Add the flat prop here to disable tone mapping */}
+                <Canvas
+                    flat
+                    dpr={[1, 1.5]}
+                    frameloop="demand"
+                    gl={{ antialias: false, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
+                    onCreated={handleCreated}
+                    camera={{ position: [2, 2, 2], fov: 50 }}
+                >
+                    <ambientLight intensity={1.0} color={0xffffff} />
+                    <directionalLight position={[10, 10, 5]} intensity={1.4} color={0xffff00} />
+                    <directionalLight position={[10, -10, 5]} intensity={1.9} color={0xffffff} />
 
-                <Stage environment={null as any} intensity={1.0} shadows={{ type: 'contact', opacity: 0.2, blur: 2 }}>
-                    <group ref={modelGroupRef as any} key={threeMfPath}>
-                        <ErrorBoundary
-                            resetKey={threeMfPath}
-                            onCatch={(error) => setLoadError(`3MF Load Error: ${error.message}`)}
-                            onReset={() => setLoadError(undefined)}
-                        >
+                    <Stage environment={null as any} intensity={1.0} shadows={{ type: 'contact', opacity: 0.2, blur: 2 }}>
+                        <group ref={modelGroupRef as any} key={threeMfPath}>
                             <Suspense fallback={null}>
-                                {threeMfPath && <ThreeMFModel url={threeMfPath} />}
+                                {threeMfPath && <ThreeMFModel key={threeMfPath} url={threeMfPath} />}
                             </Suspense>
-                        </ErrorBoundary>
-                    </group>
-                </Stage>
-                <ArcballControls makeDefault enablePan />
-                <GizmoHelper alignment="bottom-left" margin={[80, 80]}>
-                    <GizmoViewport axisColors={["#ff3653", "#8adb00", "#2c8fff"]} labelColor="white" />
-                </GizmoHelper>
-            </Canvas>
+                        </group>
+                    </Stage>
+                    <ArcballControls makeDefault enablePan />
+                    <GizmoHelper alignment="bottom-left" margin={[80, 80]}>
+                        <GizmoViewport axisColors={["#ff3653", "#8adb00", "#2c8fff"]} labelColor="white" />
+                    </GizmoHelper>
+                </Canvas>
+            </ErrorBoundary>
             <ViewerControls
                 handleSaveFile={handleSaveFile}
                 handleSnapshot={handleSnapshot}
