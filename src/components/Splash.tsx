@@ -53,11 +53,40 @@ export default function Splash() {
           Browse modules on the left and inspect outputs (PNG, STL, 3MF, Python code, 
           Openscad code, Paths and logs) on the right.
         </p>
-        <h3 className="font-semibold mb-1">Source repositories</h3>
+        <h3 className="font-semibold mb-2">Source repositories</h3>
+        <div className="space-y-2 mb-4">
+          <div>
+            <a 
+              href="https://github.com/owebeeone/anchorscad-core" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 underline font-mono"
+            >
+              anchorscad-core
+            </a>
+            <p className="text-xs text-gray-400 ml-0">
+              Primary repository containing the AnchorSCAD Python API for generating OpenSCAD source code and 3D models
+            </p>
+          </div>
+          <div>
+            <a 
+              href="https://github.com/owebeeone/anchorscad-viewer" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 underline font-mono"
+            >
+              anchorscad-viewer
+            </a>
+            <p className="text-xs text-gray-400 ml-0">
+              React single-page application that provides this interactive viewer interface
+            </p>
+          </div>
+        </div>
+        <h3 className="font-semibold mb-1">Loaded repositories</h3>
         {repos.length === 0 ? (
           <p className="text-gray-400">Loading repositories…</p>
         ) : (
-          <ul className="list-disc list-inside space-y-1 max-h-48 overflow-auto">
+          <ul className="list-disc list-inside space-y-1 max-h-32 overflow-auto">
             {repos.map((r) => (
               <li key={r}><span className="font-mono">{r}</span></li>
             ))}

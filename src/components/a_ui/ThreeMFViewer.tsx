@@ -168,9 +168,18 @@ export default function ThreeMFViewer({ threeMfPath, pngPath }: { threeMfPath: s
                     onCreated={handleCreated}
                     camera={{ position: [2, 2, 2], fov: 50 }}
                 >
-                    <ambientLight intensity={1.0} color={0xffffff} />
-                    <directionalLight position={[10, 10, 5]} intensity={1.4} color={0xffff00} />
-                    <directionalLight position={[10, -10, 5]} intensity={1.9} color={0xffffff} />
+                    <ambientLight intensity={0.5} color={0xafffff} />
+                    <directionalLight 
+                        position={[5, 5, 5]} 
+                        intensity={2.3} 
+                        color={0xafffff}
+                        castShadow
+                    />
+                    <directionalLight 
+                        position={[-3, -3, 2]} 
+                        intensity={3.6} 
+                        color={0xa0c0af}
+                    />
 
                     <Stage environment={null as any} intensity={1.0} shadows={{ type: 'contact', opacity: 0.2, blur: 2 }}>
                         <group ref={modelGroupRef as any} key={threeMfPath}>

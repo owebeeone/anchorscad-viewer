@@ -37,7 +37,7 @@ function StlModel({ url }: { url: string }) {
     }, [geometry, camera, controls]);
     return (
         <mesh geometry={geometry}>
-            <meshStandardMaterial color="#60a5fa" />
+            <meshStandardMaterial color="#b8a60b" />
         </mesh>
     );
 }
@@ -126,11 +126,21 @@ export default function ThreeDViewer({ stlPath, pngPath }: { stlPath: string; pn
                     onCreated={handleCreated}
                     frameloop="demand"
                 >
-                    <Stage environment="studio" intensity={0.6} shadows={{ type: 'contact', opacity: 0.2, blur: 2 }}>
-                        <Suspense fallback={null}>
-                            {stlPath && <StlModel key={stlPath} url={stlPath} />}
-                        </Suspense>
-                    </Stage>
+                    <ambientLight intensity={0.5} color={0xffffff} />
+                    <directionalLight 
+                        position={[5, 5, 5]} 
+                        intensity={2.3} 
+                        color={0xffffff}
+                        castShadow
+                    />
+                    <directionalLight 
+                        position={[-3, -3, 2]} 
+                        intensity={4.6} 
+                        color={0xc0c00f}
+                    />
+                    <Suspense fallback={null}>
+                        {stlPath && <StlModel key={stlPath} url={stlPath} />}
+                    </Suspense>
                     <ArcballControls makeDefault enablePan />
                     <GizmoHelper alignment="bottom-left" margin={[80, 80]}>
                         <GizmoViewport axisColors={["#ff3653", "#8adb00", "#2c8fff"]} labelColor="white" />
