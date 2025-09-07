@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useGrip, useGripSetter } from '@owebeeone/grip-react';
 import { RAW_STATUS_JSON, SHOW_SPLASH_TAP, SHOW_SPLASH_AUTO, SHOW_SPLASH_AUTO_TAP } from '../grips';
+import anchorIcon from '/anchor-icon.svg';
 
 export default function Splash() {
   const status = useGrip(RAW_STATUS_JSON);
@@ -41,7 +42,7 @@ export default function Splash() {
         </button>
         <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 flex-shrink-0">
-            <img src="/anchor-icon.svg" alt="AnchorSCAD" className="w-full h-full" />
+            <img src={anchorIcon} alt="AnchorSCAD" className="w-full h-full" />
           </div>
           <div>
             <h2 className="text-xl font-bold">Welcome to AnchorSCAD Browser</h2>
