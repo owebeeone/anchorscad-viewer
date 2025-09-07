@@ -1,8 +1,29 @@
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 export default function SvgViewer({ svgPath }: { svgPath: string }) {
     const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
+    const [svgContent, setSvgContent] = useState<string>('');
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadSvg = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch(svgPath);
+                const svgText = await response.text();
+                setSvgContent(svgText);
+            } catch (error) {
+                console.error('Failed to load SVG:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (svgPath) {
+            loadSvg();
+        }
+    }, [svgPath]);
 
     return (
         <div className="w-full h-full bg-gray-800 relative overflow-hidden">
@@ -32,15 +53,20 @@ export default function SvgViewer({ svgPath }: { svgPath: string }) {
                 {({ zoomIn, zoomOut, resetTransform }) => (
                     <>
                         <TransformComponent>
-                            <img 
-                                src={svgPath} 
-                                alt="Dependency Graph" 
-                                style={{ 
-                                    maxWidth: 'none',
-                                    maxHeight: 'none',
-                                    display: 'block'
-                                }}
-                            />
+                            {loading ? (
+                                <div className="flex items-center justify-center w-full h-full text-gray-400">
+                                    Loading SVG...
+                                </div>
+                            ) : (
+                                <div 
+                                    dangerouslySetInnerHTML={{ __html: svgContent }}
+                                    style={{ 
+                                        maxWidth: 'none',
+                                        maxHeight: 'none',
+                                        display: 'block'
+                                    }}
+                                />
+                            )}
                         </TransformComponent>
                         <div className="absolute top-2 right-2 z-10 space-x-1 svg-controls">
                             <button 
