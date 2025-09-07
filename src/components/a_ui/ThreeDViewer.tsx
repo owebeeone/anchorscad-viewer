@@ -1,5 +1,5 @@
 import { Canvas, useLoader, useThree } from '@react-three/fiber';
-import { Stage, ArcballControls, GizmoHelper, GizmoViewport } from '@react-three/drei';
+import { ArcballControls, GizmoHelper, GizmoViewport } from '@react-three/drei';
 import { STLLoader } from 'three-stdlib';
 import { Suspense, useEffect, useRef, useLayoutEffect } from 'react';
 import * as THREE from 'three';
