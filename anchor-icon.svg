@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+  <!-- Anchor shank (red) -->
+  <path d="M12 8v11" stroke="#ef4444" fill="none"/>
+  <!-- Anchor ring (blue) -->
+  <circle cx="12" cy="6" r="3" stroke="#3b82f6" fill="#dbeafe"/>
+  <!-- Anchor arms (green) -->
+  <path d="M5 12h14" stroke="#22c55e" fill="none"/>
+  <!-- Bottom arc (blue) -->
+  <path d="M6 17 Q12 21 18 17" stroke="#3b82f6" fill="none"/>
+  <!-- Anchor stock (horizontal bar) (green) -->
+  <path d="M9 12h6" stroke="#22c55e" fill="none"/>
+
+</svg>

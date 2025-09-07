@@ -32,7 +32,8 @@ export default function App() {
       <header className={`flex-shrink-0 bg-gray-800 border-b border-gray-700 px-4 py-2 flex items-center justify-between relative ${isFullScreen ? 'hidden' : ''}`}>
         <div className="flex items-center gap-3">
           <FullScreenButtons />
-          <h1 className="text-lg font-bold text-white">AnchorSCAD Runner Viewer</h1>
+          <img src="/anchor-icon.svg" alt="AnchorSCAD" className="h-6 w-auto" />
+          <h1 className="text-lg font-bold text-white">AnchorSCAD Browser</h1>
         </div>
         <nav>
           <button
