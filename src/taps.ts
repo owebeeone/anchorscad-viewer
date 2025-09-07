@@ -548,7 +548,7 @@ export function createPathsDocumentLoaderTap(): Tap {
             // Try JSON first
             if (jsonPath) {
                 try {
-                    const url = `${jsonPath}`;
+                    const url = jsonPath;
                     const res = await fetch(url, { signal });
                     if (res.ok) {
                         const doc = await res.json();
@@ -559,7 +559,7 @@ export function createPathsDocumentLoaderTap(): Tap {
 
             if (htmlPath) {
                 try {
-                    const url = `/${htmlPath}`;
+                    const url = htmlPath;
                     const res = await fetch(url, { signal });
                     if (!res.ok) return null;
                     const html = await res.text();
