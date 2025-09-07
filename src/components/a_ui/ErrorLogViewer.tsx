@@ -4,7 +4,7 @@ export default function ErrorLogViewer({ stderrPath }: { stderrPath: string }) {
     const [log, setLog] = useState<string>('Loading error log...');
 
     useEffect(() => {
-        fetch(`/${stderrPath}`)
+        fetch(stderrPath)
             .then(res => res.text())
             .then(text => setLog(text))
             .catch(() => setLog('Failed to load error log.'));
